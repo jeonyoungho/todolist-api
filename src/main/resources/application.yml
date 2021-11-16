@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: "jdbc:mariadb://localhost:3306/todolist?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC"
+    username: root
+    password: mariadb
+
+  jpa:
+    database-platform: org.hibernate.dialect.MariaDB103Dialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        #        show_sql: true
+        format_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: true # false
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+#    org.hibernate.type: trace
