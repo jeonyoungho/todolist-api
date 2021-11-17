@@ -13,7 +13,7 @@ import java.util.List;
 import static javax.persistence.CascadeType.ALL;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Embeddable
 public class ParticipantGroup {
 

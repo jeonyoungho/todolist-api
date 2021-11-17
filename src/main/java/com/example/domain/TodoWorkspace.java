@@ -15,7 +15,7 @@ import static javax.persistence.FetchType.LAZY;
 public class TodoWorkspace {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "todo_workspace_id")
     private Long id;
 

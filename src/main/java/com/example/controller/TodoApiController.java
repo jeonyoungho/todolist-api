@@ -13,9 +13,4 @@ public class TodoApiController {
 
     private final TodoService todoService;
 
-    @GetMapping("/todo")
-    public String saveTodo(Long todoId) {
-        return "helloworld";
-    }
-
 }

@@ -15,7 +15,7 @@ import java.util.List;
 public class Workspace {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "workspace_id")
     private Long id;
 
@@ -23,24 +23,27 @@ public class Workspace {
     private String name;
 
     @Embedded
-    private ParticipantGroup participantGroup;
+    private ParticipantGroup participantGroup = new ParticipantGroup();
 
     @Builder
-    public Workspace(String name, ParticipantGroup participantGroup) {
+    public Workspace(String name, Participant... participants) {
         this.name = name;
-        this.participantGroup = participantGroup;
+        for(Participant participant : participants) {
+            addParticipant(participant);
+        }
     }
 
     //== 생성 메서드 ==//
-    public Workspace create(String name, Participant... participants) {
-        Workspace workspace = Workspace.builder()
+    public static Workspace create(String name, Participant... participants) {
+        return Workspace.builder()
                 .name(name)
+                .participants(participants)
                 .build();
+    }
 
-        for(Participant participant : participants) {
-            workspace.participantGroup.addParticipant(participant);
-        }
-
-        return workspace;
+    //== 변경 메서드 ==//
+    public void addParticipant(Participant participant) {
+        participantGroup.addParticipant(participant);
+        participant.setWorkspace(this);
     }
 }
