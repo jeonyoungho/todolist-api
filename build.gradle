@@ -33,11 +33,11 @@ dependencies {
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5'
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
 	implementation 'org.mariadb.jdbc:mariadb-java-client'
-//    testImplementation 'com.h2database:h2'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	implementation 'org.springframework.boot:spring-boot-devtools'
 
+	testImplementation 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	//JUnit4 추가
 	testImplementation("org.junit.vintage:junit-vintage-engine") {

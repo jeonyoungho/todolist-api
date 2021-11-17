@@ -16,6 +16,9 @@ spring:
         default_batch_fetch_size: 100
     open-in-view: true # false
 
+api:
+  version: /api/v1
+
 logging:
   level:
     org.hibernate.SQL: debug
