@@ -1,14 +1,12 @@
-package com.example.domain;
+package com.example.domain.workspace;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.example.domain.member.Member;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
+@ToString(of = {"id", "name", "participantGroup"})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -28,9 +26,13 @@ public class Workspace {
     @Builder
     public Workspace(String name, Participant... participants) {
         this.name = name;
-        for(Participant participant : participants) {
-            addParticipant(participant);
+        if(participants != null && participants.length > 0) {
+            for(Participant participant : participants) {
+                addParticipant(participant);
+            }
         }
+
+        System.out.println("participantGroup.getParticipants().size() = " + participantGroup.getParticipants().size());
     }
 
     //== 생성 메서드 ==//
@@ -41,9 +43,21 @@ public class Workspace {
                 .build();
     }
 
-    //== 변경 메서드 ==//
+    //== 연관관계 메서드 ==//
     public void addParticipant(Participant participant) {
         participantGroup.addParticipant(participant);
         participant.setWorkspace(this);
+    }
+
+    public void addParticipants(List<Member> members) {
+        for (Member member : members) {
+            Participant participant = Participant.create(member);
+            addParticipant(participant);
+        }
+    }
+
+    public void removeParticipant(Participant participant) {
+        participantGroup.removeParticipant(participant);
+        participant.setWorkspace(null);
     }
 }

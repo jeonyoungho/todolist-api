@@ -1,19 +1,21 @@
-package com.example.domain;
+package com.example.domain.workspace;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.CascadeType.ALL;
 
+@ToString(of = {"participants"})
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 @Embeddable
 public class ParticipantGroup {
 
@@ -27,4 +29,9 @@ public class ParticipantGroup {
     public void addParticipant(Participant participant) {
         participants.add(participant);
     }
+
+    public void removeParticipant(Participant participant) {
+        participants.remove(participant);
+    }
+
 }

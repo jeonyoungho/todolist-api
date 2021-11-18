@@ -1,9 +1,10 @@
-package com.example.repository;
+package com.example.domain.member;
 
-import com.example.domain.Address;
-import com.example.domain.Member;
+import com.example.domain.member.Address;
+import com.example.domain.member.Member;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.domain.member.MemberRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MemberRepositoryTest {
 
-    @Autowired MemberRepository memberRepository;
+    @Autowired
+    MemberRepository memberRepository;
 
     @Test
-    public void saveTest() {
+    public void save_basic_success() {
         Member member = Member.builder()
-                .userId("aliceid")
-                .password("alicepw")
-                .username("alice")
+                .userId("test-id")
+                .password("test-pw")
+                .username("test-user")
                 .address(Address.builder()
-                        .street("street1")
-                        .city("city1")
-                        .zipcode("zipcode1")
+                        .street("test-street")
+                        .city("test-city")
+                        .zipcode("test-zipcode")
                         .build())
                 .build();
 
@@ -37,6 +39,4 @@ public class MemberRepositoryTest {
 
         assertThat(findMember).isEqualTo(saveMember);
     }
-
-
 }

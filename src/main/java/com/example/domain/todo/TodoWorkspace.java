@@ -1,6 +1,7 @@
-package com.example.domain;
+package com.example.domain.todo;
 
 import com.example.domain.todo.Todo;
+import com.example.domain.workspace.Workspace;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

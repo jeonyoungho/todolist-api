@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.repository.TodoRepository;
+import com.example.domain.todo.TodoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

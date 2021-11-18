@@ -1,23 +1,19 @@
 package com.example.domain.todo;
 
-import com.example.domain.Member;
-import com.example.domain.TodoStatus;
-import com.example.domain.TodoWorkspace;
-import com.example.domain.TodoWorkspaceGroup;
+import com.example.domain.member.Member;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static javax.persistence.FetchType.LAZY;
 
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "DTYPE")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public abstract class Todo {
