@@ -1,14 +1,16 @@
 package com.example.domain.todo;
 
 import com.example.domain.member.Member;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.FetchType.LAZY;
 
 @Getter
@@ -16,6 +18,7 @@ import static javax.persistence.FetchType.LAZY;
 @DiscriminatorColumn(name = "DTYPE")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@ToString(of = {"id", "member", "content", "todoWorkspaceGroup", "parent"})
 public abstract class Todo {
 
     @Id
@@ -23,46 +26,55 @@ public abstract class Todo {
     @Column(name = "todo_id")
     private Long id;
 
-    @Column(length = 50, nullable = false)
-    private String content;
-
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Embedded
-    private TodoWorkspaceGroup workspaceGroup;
+    @Column(length = 50, nullable = false)
+    private String content;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
-    private TodoStatus status;
+    @Embedded
+    private TodoWorkspaceGroup todoWorkspaceGroup = new TodoWorkspaceGroup();
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "parent_id")
     private Todo parent;
 
-    @OneToMany(mappedBy = "parent")
-    private List<Todo> childs = new ArrayList<>();
+    @OneToMany(mappedBy = "parent", cascade = ALL, orphanRemoval = true)
+    private Set<Todo> childs = new LinkedHashSet<>();
 
-//    @Builder
-//    public Todo(String content, Member member, TodoWorkspaceGroup workspaceGroup, TodoStatus status, Todo parent) {
-//        this.content = content;
-//        this.member = member;
-//        this.workspaceGroup = workspaceGroup;
-//        this.status = status;
-//        this.parent = parent;
-//    }
-//
-//    //== 생성 메서드 ==//
-//    public static Todo create(String content, Member member, Todo parent, TodoWorkspace... todoWorkspaces) {
-//        Todo todo = Todo.builder()
-//                .content(content)
-//                .member(member)
-//                .status(TodoStatus.UNCOMPLETED)
-//                .parent(parent)
-//                .build();
-//         todo.workspaceGroup.addTodoWorkspaces(todoWorkspaces);
-//
-//         return todo;
-//    }
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private TodoStatus status;
+
+    public Todo(Member member, TodoWorkspace todoWorkspace, String content, Todo parent, TodoStatus status) {
+        this.member = member;
+        this.content = content;
+        this.parent = parent;
+        this.status = status;
+
+        addTodoWorkspace(todoWorkspace);
+    }
+
+    //== 연관관계 메서드 ==//
+    public void addTodoWorkspace(TodoWorkspace todoWorkspace) {
+        todoWorkspaceGroup.addTodoWorkspace(todoWorkspace);
+        todoWorkspace.setTodo(this);
+    }
+
+    public void changeStatus(TodoStatus status) {
+        this.status = status;
+    }
+
+    public Boolean isAllChildCompleted() {
+        return childs.stream().allMatch(t -> TodoStatus.COMPLETED.equals(t.status));
+    }
+
+    public void clearChilds() {
+        getChilds().clear();
+    }
+
+    public int childsSize() {
+        return getChilds().size();
+    }
 }

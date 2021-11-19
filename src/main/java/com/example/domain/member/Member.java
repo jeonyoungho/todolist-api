@@ -24,7 +24,7 @@ public class Member {
     @Column(name = "user_pw", length = 20, nullable = false)
     private String password;
 
-    @Column(name = "user_name", length = 10, nullable = false)
+    @Column(name = "user_name", length = 20, nullable = false)
     private String username;
 
     @Embedded

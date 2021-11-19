@@ -1,8 +1,9 @@
 package com.example.domain.todo;
 
-import com.example.domain.todo.Todo;
 import com.example.domain.workspace.Workspace;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ public class TodoWorkspace {
     @Column(name = "todo_workspace_id")
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "todo_id")
     private Todo todo;
@@ -28,4 +30,21 @@ public class TodoWorkspace {
     @JoinColumn(name = "workspace_id")
     private Workspace workspace;
 
+    @Builder
+    public TodoWorkspace(Todo todo, Workspace workspace) {
+        this.todo = todo;
+        this.workspace = workspace;
+    }
+
+    //== 생성 메서드 ==//
+    public static TodoWorkspace create(Workspace workspace) {
+        return TodoWorkspace.builder()
+                .workspace(workspace)
+                .build();
+    }
+
+    //== 연관관계 메서드 ==//
+    public void setTodo(Todo todo) {
+        this.todo = todo;
+    }
 }

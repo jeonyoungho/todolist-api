@@ -26,13 +26,11 @@ public class Workspace {
     @Builder
     public Workspace(String name, Participant... participants) {
         this.name = name;
-        if(participants != null && participants.length > 0) {
+        if (participants != null && participants.length > 0) {
             for(Participant participant : participants) {
                 addParticipant(participant);
             }
         }
-
-        System.out.println("participantGroup.getParticipants().size() = " + participantGroup.getParticipants().size());
     }
 
     //== 생성 메서드 ==//
@@ -56,8 +54,4 @@ public class Workspace {
         }
     }
 
-    public void removeParticipant(Participant participant) {
-        participantGroup.removeParticipant(participant);
-        participant.setWorkspace(null);
-    }
 }

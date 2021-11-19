@@ -1,10 +1,9 @@
-package com.example.domain.member;
+package com.example.domain.workspace;
 
 import com.example.domain.member.Address;
 import com.example.domain.member.Member;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.example.domain.member.MemberRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,38 +11,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import javax.persistence.EntityManager;
 
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-public class MemberRepositoryTest {
+public class ParticipantGroupTest {
 
     @Autowired
     MemberRepository memberRepository;
 
     @Test
-    public void save_GivenValidInput_Success() {
-        Member member = Member.builder()
-                .userId("test-id")
-                .password("test-pw")
-                .username("test-user")
-                .address(Address.builder()
-                        .street("test-street")
-                        .city("test-city")
-                        .zipcode("test-zipcode")
-                        .build())
-                .build();
-
-        Member saveMember = memberRepository.save(member);
-        Member findMember = memberRepository.findById(member.getId()).get();
-
-        assertThat(findMember).isEqualTo(saveMember);
-    }
-
-    @Test
-    public void findById_GivenInValidInput_Fail() throws Exception {
+    public void isExistByMemberId_GivenExistedMemberId_True() throws Exception {
         // given
         Member member = Member.builder()
                 .userId("test-id")
@@ -58,10 +39,44 @@ public class MemberRepositoryTest {
 
         memberRepository.save(member);
 
+        Participant participant = Participant.create(member);
+
+        ParticipantGroup participantGroup = new ParticipantGroup();
+        participantGroup.addParticipant(participant);
+
         // when
-        Optional<Member> result = memberRepository.findById(500L);
+        Boolean expected = participantGroup.isExistByMemberId(member.getId());
 
         // then
-        assertThat(result.isPresent()).isFalse();
+        Assertions.assertThat(expected).isTrue();
     }
+
+    @Test
+    public void isExistByMemberId_GivenNotExistedMemberId_False() throws Exception {
+        // given
+        Member member = Member.builder()
+                .userId("test-id")
+                .password("test-pw")
+                .username("test-user")
+                .address(Address.builder()
+                        .street("test-street")
+                        .city("test-city")
+                        .zipcode("test-zipcode")
+                        .build())
+                .build();
+
+        memberRepository.save(member);
+
+        Participant participant = Participant.create(member);
+
+        ParticipantGroup participantGroup = new ParticipantGroup();
+        participantGroup.addParticipant(participant);
+
+        // when
+        Boolean expected = participantGroup.isExistByMemberId(1000L);
+
+        // then
+        Assertions.assertThat(expected).isFalse();
+    }
+
 }

@@ -3,6 +3,8 @@ package com.example.domain.workspace;
 import com.example.domain.member.Address;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +29,7 @@ public class WorkspaceRepositoryTest {
     @Autowired MemberRepository memberRepository;
 
     @Test
-    public void findAllByMemberId_basic_success() {
+    public void findAllByMemberId_Basic_Success() {
         // given
         Member member = Member.builder()
                 .userId("test-id")
@@ -47,14 +49,11 @@ public class WorkspaceRepositoryTest {
             workspaceRepository.save(workspace);
         }
 
-        em.flush();
-        em.clear();
-
         // when
         List<Workspace> workspaces = workspaceRepository.findAllByMemberId(member.getId());
 
         // then
-        Assertions.assertThat(workspaces.size()).isEqualTo(10);
+        assertThat(workspaces.size()).isEqualTo(10);
 
 //        System.out.println("workspaces = " + workspaces.size());
 //        System.out.println("=============");
@@ -65,5 +64,36 @@ public class WorkspaceRepositoryTest {
 //        }
     }
 
+
+    @Test
+    public void findByIdWithFetchJoinParticipantMember_Basic_Success() throws Exception {
+        // given
+        Member member = Member.builder()
+                .userId("test-id")
+                .password("test-pw")
+                .username("test-user")
+                .address(Address.builder()
+                        .street("test-street")
+                        .city("test-city")
+                        .zipcode("test-zipcode")
+                        .build())
+                .build();
+        memberRepository.save(member);
+
+        Participant participant = Participant.create(member);
+
+        final String testWorkspaceName= "test-workspace";
+        Workspace workspace = Workspace.create(testWorkspaceName, participant);
+        workspaceRepository.save(workspace);
+
+        em.flush();
+        em.clear();
+
+        // when
+        Workspace result = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspace.getId());
+
+        // then
+        assertThat(result.getParticipantGroup().getSize()).isEqualTo(1);
+    }
 
 }

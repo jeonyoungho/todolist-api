@@ -41,7 +41,7 @@ public class Participant {
                 .build();
     }
 
-    //== 변경 메서드 ==//
+    //== 연관관계 메서드 ==//
     public void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
     }
