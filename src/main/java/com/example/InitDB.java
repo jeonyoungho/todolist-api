@@ -12,6 +12,7 @@ import com.example.domain.todo.TodoRepository;
 import com.example.service.TodoService;
 import com.example.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 
+@Profile("local")
 @Component
 @RequiredArgsConstructor
 public class InitDB {

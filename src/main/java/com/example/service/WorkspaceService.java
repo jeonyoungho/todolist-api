@@ -39,7 +39,7 @@ public class WorkspaceService {
     }
 
     @Transactional
-    public Long addParticipants(AddParticipantsRequestDto rq) {
+    public void addParticipants(AddParticipantsRequestDto rq) {
         Long workspaceId = rq.getWorkspaceId();
 
         Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
@@ -48,8 +48,6 @@ public class WorkspaceService {
         List<Member> members = memberRepository.findAllById(rq.getMemberIds());
 
         workspace.addParticipants(members);
-
-        return workspace.getId();
     }
 
     @Transactional(readOnly = true)
@@ -75,19 +73,16 @@ public class WorkspaceService {
     }
 
     @Transactional
-    public Long deleteById(Long workspaceId) {
+    public void deleteById(Long workspaceId) {
         workspaceRepository.deleteById(workspaceId);
-        return workspaceId;
     }
 
     @Transactional
-    public Long deleteParticipantByMemberId(Long memberId, Long workspaceId) {
+    public void deleteParticipantByMemberId(Long memberId, Long workspaceId) {
         Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
 
         if (workspace.getParticipantGroup().isExistByMemberId(memberId)) {
             workspace.getParticipantGroup().removeParticipant(memberId);
         }
-
-        return memberId;
     }
 }

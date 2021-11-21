@@ -36,6 +36,7 @@ dependencies {
 	implementation 'org.mariadb.jdbc:mariadb-java-client'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.5.9'
 	implementation 'org.springframework.boot:spring-boot-devtools'
 
 	testImplementation 'com.h2database:h2'

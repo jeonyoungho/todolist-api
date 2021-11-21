@@ -50,20 +50,20 @@ public class TodoService {
     }
 
     @Transactional
-    public Long changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) throws Throwable {
+    public void changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) throws Throwable {
         TodoStatus status = rq.getStatus();
         if (TodoStatus.COMPLETED.equals(status)) {
-            return changeCompleteStatus(todoId, status);
+            changeCompleteStatus(todoId, status);
+            return;
         }
 
         Todo todo = (Todo) todoRepository.findById(todoId)
                 .orElseThrow(() -> new IllegalArgumentException("Could not found todo with id " + todoId));
 
         todo.changeStatus(status);
-        return todoId;
     }
 
-    private Long changeCompleteStatus(Long todoId, TodoStatus status) {
+    private void changeCompleteStatus(Long todoId, TodoStatus status) {
         Todo todo = todoRepository.findByIdFetchJoinChilds(todoId);
 
         if(!todo.isAllChildCompleted()) {
@@ -71,7 +71,6 @@ public class TodoService {
         }
 
         todo.changeStatus(status);
-        return todoId;
     }
 
     @Transactional

@@ -1,6 +1,5 @@
 package com.example.domain.member;
 
-import com.example.domain.member.Address;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

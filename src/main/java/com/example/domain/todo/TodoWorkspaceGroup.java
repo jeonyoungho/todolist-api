@@ -1,11 +1,9 @@
 package com.example.domain.todo;
 
-import com.example.domain.todo.TodoWorkspace;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
 import javax.persistence.OneToMany;
 import java.util.ArrayList;
@@ -15,7 +13,7 @@ import java.util.List;
 import static javax.persistence.CascadeType.ALL;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 @Embeddable
 public class TodoWorkspaceGroup {
 
