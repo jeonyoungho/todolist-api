@@ -3,10 +3,10 @@ package com.example.domain.todo;
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
-import com.example.domain.member.Address;
-import com.example.domain.member.Member;
-import com.example.domain.member.MemberRepository;
-import com.example.domain.workspace.Workspace;
+import com.example.domain.user.Address;
+import com.example.domain.user.User;
+import com.example.domain.user.UserRepository;
+import com.example.domain.user.UserRole;
 import com.example.service.TodoService;
 import com.example.service.WorkspaceService;
 import org.junit.Test;
@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
@@ -36,7 +34,7 @@ public class TodoRepositoryImplTest {
     @Autowired
     TodoService todoService;
     @Autowired
-    MemberRepository memberRepository;
+    UserRepository userRepository;
     @Autowired
     WorkspaceService workspaceService;
 
@@ -44,28 +42,29 @@ public class TodoRepositoryImplTest {
     @Rollback(value = false)
     public void findByIdFetchJoinTodoWorkspaceGroupAndChilds_GivenValidInput_Success() throws Exception {
         // given
-        Member member = createMember();
-        memberRepository.save(member);
+        User user = createUser();
+        userRepository.save(user);
 
         List<Long> memberIds = new ArrayList<>();
         for(int i=0;i<20;i++) {
-            Member saveMember = Member.builder()
-                    .userId("test-id" + i)
-                    .password("test-pw" + i)
-                    .username("test-user" + i)
+            User saveUser = User.builder()
+                    .accountId("test-id" + i)
+                    .accountPw("test-pw" + i)
+                    .name("test-user" + i)
                     .address(Address.builder()
                             .street("test-street" + i)
                             .city("test-city" + i)
                             .zipcode("test-zipcode" + i)
                             .build())
+                    .role(UserRole.ROLE_USER)
                     .build();
-            memberRepository.save(saveMember);
-            memberIds.add(saveMember.getId());
+            userRepository.save(saveUser);
+            memberIds.add(saveUser.getId());
         }
 
         final String testWorkspaceName= "test-workspace";
         Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.builder()
-                .memberId(member.getId())
+                .memberId(user.getId())
                 .name(testWorkspaceName)
                 .build());
 
@@ -76,7 +75,7 @@ public class TodoRepositoryImplTest {
 
         final String parentContent = "parent-todo-test-content";
         BasicTodoSaveRequestDto parentRequest = BasicTodoSaveRequestDto.builder()
-                .memberId(member.getId())
+                .memberId(user.getId())
                 .workspaceId(workspaceId)
                 .content(parentContent)
                 .parentId(null)
@@ -87,7 +86,7 @@ public class TodoRepositoryImplTest {
 
         final String childContent = "child-todo-test-content";
         BasicTodoSaveRequestDto childRequest = BasicTodoSaveRequestDto.builder()
-                .memberId(member.getId())
+                .memberId(user.getId())
                 .workspaceId(workspaceId)
                 .content(childContent)
                 .parentId(parentBasicTodoId)
@@ -98,7 +97,7 @@ public class TodoRepositoryImplTest {
 
         final String grandChildContent = "grand-child-todo-test-content";
         BasicTodoSaveRequestDto grandChildRequest = BasicTodoSaveRequestDto.builder()
-                .memberId(member.getId())
+                .memberId(user.getId())
                 .workspaceId(workspaceId)
                 .content(grandChildContent)
                 .parentId(parentBasicTodoId)
@@ -115,23 +114,24 @@ public class TodoRepositoryImplTest {
 
         Set<Todo> childs = result.getChilds();
         for (Todo child : childs) {
-            System.out.println("child.getContent() = " + child.getContent());
+            "child.getContent() = " + child.getContent());
         }
-        System.out.println();
+        );
 
         // then
     }
 
-    private Member createMember() {
-        return Member.builder()
-                .userId("test-id")
-                .password("test-pw")
-                .username("test-user")
+    private User createUser() {
+        return User.builder()
+                .accountId("test-id")
+                .accountPw("test-pw")
+                .name("test-user")
                 .address(Address.builder()
                         .street("test-street")
                         .city("test-city")
                         .zipcode("test-zipcode")
                         .build())
+                .role(UserRole.ROLE_USER)
                 .build();
     }
 }

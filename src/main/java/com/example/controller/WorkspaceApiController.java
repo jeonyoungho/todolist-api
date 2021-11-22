@@ -1,6 +1,6 @@
 package com.example.controller;
 
-import com.example.controller.dto.member.MemberResponseDto;
+import com.example.controller.dto.user.UserResponseDto;
 import com.example.controller.dto.workspace.WorkspaceResponseDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
@@ -68,14 +68,14 @@ public class WorkspaceApiController {
 
     @Operation(summary = "작업 공간에 속한 회원 리스트 조회", description = "작업 공간 고유 식별자를 인자로 받아 작업 공간에 속한 회원 리스트를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "작업 공간에 속한 회원 리스트 조회 성공", content = @Content(schema = @Schema(implementation = MemberResponseDto.class))),
+            @ApiResponse(responseCode = "200", description = "작업 공간에 속한 회원 리스트 조회 성공", content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근")
     })
     @GetMapping("/workspace/members/{workspaceId}")
-    public ResponseEntity<List<MemberResponseDto>> findMembersById(
+    public ResponseEntity<List<UserResponseDto>> findMembersById(
             @Parameter(description = "작업 공간 고유 식별자", schema = @Schema(implementation = Long.class))
             @PathVariable Long workspaceId) {
-        List<MemberResponseDto> result = workspaceService.findMembersById(workspaceId);
+        List<UserResponseDto> result = workspaceService.findMembersById(workspaceId);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -85,7 +85,7 @@ public class WorkspaceApiController {
             @ApiResponse(responseCode = "200", description = "회원의 작업 공간 리스트 조회 성공", content = @Content(schema = @Schema(implementation = WorkspaceResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근")
     })
-    @GetMapping("/workspace/{memberId}")
+    @GetMapping("/workspace/all/{memberId}")
     public ResponseEntity<List<WorkspaceResponseDto>> findAllByMemberId(
             @Parameter(description = "회원 고유 식별자", schema = @Schema(implementation = Long.class))
             @PathVariable Long memberId) {

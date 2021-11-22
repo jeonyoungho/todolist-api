@@ -1,1 +1,1 @@
-GET http://localhost:8080/api/v1/workspace/members/1
+GET http://localhost:8080/api/v1/workspace/users/1

@@ -1,6 +1,6 @@
 package com.example.domain.todo;
 
-import com.example.domain.member.Member;
+import com.example.domain.user.User;
 import lombok.*;
 
 import javax.persistence.*;
@@ -25,7 +25,7 @@ public abstract class Todo {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
-    private Member member;
+    private User user;
 
     @Column(length = 50, nullable = false)
     private String content;
@@ -44,8 +44,8 @@ public abstract class Todo {
     @Column(length = 20, nullable = false)
     private TodoStatus status;
 
-    public Todo(Member member, TodoWorkspace todoWorkspace, String content, Todo parent, TodoStatus status) {
-        this.member = member;
+    public Todo(User user, TodoWorkspace todoWorkspace, String content, Todo parent, TodoStatus status) {
+        this.user = user;
         this.content = content;
         this.parent = parent;
         this.status = status;

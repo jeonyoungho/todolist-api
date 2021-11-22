@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import static com.example.domain.member.QMember.member;
+import static com.example.domain.user.QMember.member;
 import static com.example.domain.workspace.QParticipant.*;
 import static com.example.domain.workspace.QWorkspace.workspace;
 
@@ -19,7 +19,7 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .select(workspace).distinct()
                 .from(workspace)
                 .leftJoin(workspace.participantGroup.participants, participant).fetchJoin()
-                .where(participant.member.id.eq(memberId))
+                .where(participant.user.id.eq(memberId))
                 .fetch();
     }
 
@@ -29,7 +29,7 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .select(workspace).distinct()
                 .from(workspace)
                 .leftJoin(workspace.participantGroup.participants, participant).fetchJoin()
-                .leftJoin(participant.member, member).fetchJoin()
+                .leftJoin(participant.user, member).fetchJoin()
                 .where(workspace.id.eq(workspaceId))
                 .fetchOne();
     }

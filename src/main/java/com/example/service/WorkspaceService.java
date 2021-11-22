@@ -1,13 +1,13 @@
 package com.example.service;
 
-import com.example.controller.dto.member.MemberResponseDto;
+import com.example.controller.dto.user.UserResponseDto;
 import com.example.controller.dto.workspace.WorkspaceResponseDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
-import com.example.domain.member.Member;
+import com.example.domain.user.User;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
-import com.example.domain.member.MemberRepository;
+import com.example.domain.user.UserRepository;
 import com.example.domain.workspace.WorkspaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,17 +21,17 @@ import java.util.stream.Collectors;
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public Long saveWorkspace(WorkspaceSaveRequestDto rq) {
         Long memberId = rq.getMemberId();
         String name = rq.getName();
 
-        Member member = memberRepository.findById(memberId)
+        User user = userRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Could not found member with id " + memberId));
 
-        Participant participant = Participant.create(member);
+        Participant participant = Participant.create(user);
 
         Workspace workspace = Workspace.create(name, participant);
 
@@ -45,9 +45,9 @@ public class WorkspaceService {
         Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
                 .orElseThrow(() -> new IllegalArgumentException("Could not found workspace with id " + workspaceId));
 
-        List<Member> members = memberRepository.findAllById(rq.getMemberIds());
+        List<User> users = userRepository.findAllById(rq.getMemberIds());
 
-        workspace.addParticipants(members);
+        workspace.addParticipants(users);
     }
 
     @Transactional(readOnly = true)
@@ -64,11 +64,11 @@ public class WorkspaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberResponseDto> findMembersById(Long workspaceId) {
+    public List<UserResponseDto> findMembersById(Long workspaceId) {
         Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
         return workspace.getParticipantGroup().getParticipants().stream()
-                .map(p -> p.getMember())
-                .map(MemberResponseDto::new)
+                .map(p -> p.getUser())
+                .map(UserResponseDto::new)
                 .collect(Collectors.toList());
     }
 

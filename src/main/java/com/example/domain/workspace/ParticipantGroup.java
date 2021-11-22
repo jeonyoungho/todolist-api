@@ -41,14 +41,14 @@ public class ParticipantGroup {
     public Participant findByMemberId(Long memberId) {
         return participants.stream()
                 .parallel()
-                .filter(p -> p.getMember().getId().equals(memberId))
+                .filter(p -> p.getUser().getId().equals(memberId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Could not found participant with id " + memberId));
     }
 
     public Boolean isExistByMemberId(Long memberId) {
         return participants.stream()
-                .anyMatch(p -> memberId.equals(p.getMember().getId()));
+                .anyMatch(p -> memberId.equals(p.getUser().getId()));
     }
 
 }

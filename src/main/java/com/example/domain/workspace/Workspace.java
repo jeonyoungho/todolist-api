@@ -1,6 +1,6 @@
 package com.example.domain.workspace;
 
-import com.example.domain.member.Member;
+import com.example.domain.user.User;
 import lombok.*;
 
 import javax.persistence.*;
@@ -47,9 +47,9 @@ public class Workspace {
         participant.setWorkspace(this);
     }
 
-    public void addParticipants(List<Member> members) {
-        for (Member member : members) {
-            Participant participant = Participant.create(member);
+    public void addParticipants(List<User> users) {
+        for (User user : users) {
+            Participant participant = Participant.create(user);
             addParticipant(participant);
         }
     }

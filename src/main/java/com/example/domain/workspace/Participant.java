@@ -1,6 +1,6 @@
 package com.example.domain.workspace;
 
-import com.example.domain.member.Member;
+import com.example.domain.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
@@ -21,7 +21,7 @@ public class Participant {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
-    private Member member;
+    private User user;
 
     @JsonIgnore
     @ManyToOne(fetch = LAZY)
@@ -29,15 +29,15 @@ public class Participant {
     private Workspace workspace;
 
     @Builder
-    public Participant(Member member, Workspace workspace) {
-        this.member = member;
+    public Participant(User user, Workspace workspace) {
+        this.user = user;
         this.workspace = workspace;
     }
 
     //== 생성 메서드 ==//
-    public static Participant create(Member member) {
+    public static Participant create(User user) {
         return Participant.builder()
-                .member(member)
+                .user(user)
                 .build();
     }
 

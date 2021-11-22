@@ -1,14 +1,13 @@
 package com.example.domain.todo;
 
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
-import com.example.domain.member.Address;
-import com.example.domain.member.Member;
+import com.example.domain.user.Address;
+import com.example.domain.user.User;
+import com.example.domain.user.UserRole;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TodoFactoryTest {
 
@@ -20,25 +19,26 @@ public class TodoFactoryTest {
         final Long parentId = 1L;
         final int expectedTime = 10;
 
-        Member member = Member.builder()
-                .userId("test-id")
-                .password("test-pw")
-                .username("test-user")
+        User user = User.builder()
+                .accountId("test-id")
+                .accountPw("test-pw")
+                .name("test-user")
                 .address(Address.builder()
                         .street("test-street")
                         .city("test-city")
                         .zipcode("test-zipcode")
                         .build())
+                .role(UserRole.ROLE_USER)
                 .build();
 
-        Participant participant = Participant.create(member);
+        Participant participant = Participant.create(user);
         Workspace workspace = Workspace.create("test-workspace", participant);
         TodoWorkspace todoWorkspace = TodoWorkspace.create(workspace);
 
-        Todo parent = BasicTodo.createBasicTodo(member, todoWorkspace, "test2", null, 10);
+        Todo parent = BasicTodo.createBasicTodo(user, todoWorkspace, "test2", null, 10);
 
         // when
-        Todo result = TodoFactory.createTodo(member, todoWorkspace, parent, BasicTodoSaveRequestDto.builder()
+        Todo result = TodoFactory.createTodo(user, todoWorkspace, parent, BasicTodoSaveRequestDto.builder()
                 .memberId(memberId)
                 .content(content)
                 .parentId(parentId)
@@ -47,7 +47,7 @@ public class TodoFactoryTest {
 
         // then
         Assertions.assertThat(result.getContent()).isEqualTo(content);
-        System.out.println(result);
+        result);
     }
 
 }

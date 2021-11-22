@@ -1,11 +1,9 @@
 package com.example.service;
 
-import com.example.controller.dto.member.MemberResponseDto;
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
-import com.example.controller.dto.todo.TodoSaveRequestDto;
 import com.example.controller.dto.todo.TodoStatusUpdateRequestDto;
-import com.example.domain.member.Member;
-import com.example.domain.member.MemberRepository;
+import com.example.domain.user.User;
+import com.example.domain.user.UserRepository;
 import com.example.domain.todo.*;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
@@ -14,23 +12,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class TodoService {
 
     private final TodoRepository todoRepository;
-    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
     private final EntityManager em;
 
     @Transactional
     public Long saveBasicTodo(BasicTodoSaveRequestDto rq) {
         Long memberId = rq.getMemberId();
-        Member member = memberRepository.findById(memberId)
+        User user = userRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Could not found member with id " + memberId));
 
         Todo parent = null;
@@ -44,7 +39,7 @@ public class TodoService {
                 .orElseThrow(() -> new IllegalArgumentException("Could not found workspace with id " + workspaceId));
         TodoWorkspace todoWorkspace = TodoWorkspace.create(workspace);
 
-        Todo todo = TodoFactory.createTodo(member, todoWorkspace, parent, rq);
+        Todo todo = TodoFactory.createTodo(user, todoWorkspace, parent, rq);
         todoRepository.save(todo);
         return todo.getId();
     }

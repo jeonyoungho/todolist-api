@@ -3,22 +3,20 @@ package com.example;
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
-import com.example.domain.member.Address;
-import com.example.domain.member.Member;
-import com.example.domain.member.MemberRepository;
-import com.example.domain.todo.BasicTodo;
-import com.example.domain.todo.TodoFactory;
+import com.example.domain.user.Address;
+import com.example.domain.user.User;
+import com.example.domain.user.UserRepository;
 import com.example.domain.todo.TodoRepository;
+import com.example.domain.user.UserRole;
 import com.example.service.TodoService;
 import com.example.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,34 +36,36 @@ public class InitDB {
     @Transactional
     @RequiredArgsConstructor
     static class InitService {
-        private final MemberRepository memberRepository;
+        private final UserRepository userRepository;
         private final WorkspaceService workspaceService;
         private final TodoRepository todoRepository;
         private final TodoService todoService;
+        private final BCryptPasswordEncoder passwordEncoder;
 
         public void dbInit1() {
-            Member member = createMember();
-            memberRepository.save(member);
+            User user = createUser();
+            userRepository.save(user);
 
             List<Long> memberIds = new ArrayList<>();
             for(int i=0;i<20;i++) {
-                Member saveMember = Member.builder()
-                        .userId("test-id" + i)
-                        .password("test-pw" + i)
-                        .username("test-user" + i)
+                User saveUser = User.builder()
+                        .accountId("test-id" + i)
+                        .accountPw(passwordEncoder.encode("test-pw" + i))
+                        .name("test-user" + i)
                         .address(Address.builder()
                                 .street("test-street" + i)
                                 .city("test-city" + i)
                                 .zipcode("test-zipcode" + i)
                                 .build())
+                        .role(UserRole.ROLE_USER)
                         .build();
-                memberRepository.save(saveMember);
-                memberIds.add(saveMember.getId());
+                userRepository.save(saveUser);
+                memberIds.add(saveUser.getId());
             }
 
             final String testWorkspaceName= "test-workspace";
             Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.builder()
-                    .memberId(member.getId())
+                    .memberId(user.getId())
                     .name(testWorkspaceName)
                     .build());
 
@@ -76,7 +76,7 @@ public class InitDB {
 
             final String parentContent = "parent-todo-test-content";
             BasicTodoSaveRequestDto parentRequest = BasicTodoSaveRequestDto.builder()
-                    .memberId(member.getId())
+                    .memberId(user.getId())
                     .workspaceId(workspaceId)
                     .content(parentContent)
                     .parentId(null)
@@ -87,7 +87,7 @@ public class InitDB {
 
             final String childContent = "child-todo-test-content";
             BasicTodoSaveRequestDto childRequest = BasicTodoSaveRequestDto.builder()
-                    .memberId(member.getId())
+                    .memberId(user.getId())
                     .workspaceId(workspaceId)
                     .content(childContent)
                     .parentId(parentBasicTodoId)
@@ -97,16 +97,17 @@ public class InitDB {
             Long childBasicTodoId = todoService.saveBasicTodo(childRequest);
         }
 
-        private Member createMember() {
-            return Member.builder()
-                    .userId("test-id")
-                    .password("test-pw")
-                    .username("test-user")
+        private User createUser() {
+            return User.builder()
+                    .accountId("test-id")
+                    .accountPw(passwordEncoder.encode("test-pw"))
+                    .name("test-user")
                     .address(Address.builder()
                             .street("test-street")
                             .city("test-city")
                             .zipcode("test-zipcode")
                             .build())
+                    .role(UserRole.ROLE_USER)
                     .build();
         }
 
