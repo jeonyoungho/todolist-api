@@ -22,6 +22,12 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
             }
         }
 
+        // swagger-ui 로부터의 요청일 경우 토큰 유효성 검증을 무시
+//        final String referer = request.getHeader("Referer");
+//        if (referer.contains("/swagger-ui")) {
+//            return true;
+//        }
+
         response.sendRedirect("/error/unauthorized"); // token 유효성 검사에 실패할 경우 예외 API로 리다이렉트
         return false;
     }
