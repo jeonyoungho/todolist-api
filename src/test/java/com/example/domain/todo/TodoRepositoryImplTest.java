@@ -114,9 +114,8 @@ public class TodoRepositoryImplTest {
 
         Set<Todo> childs = result.getChilds();
         for (Todo child : childs) {
-            "child.getContent() = " + child.getContent());
+            System.out.println("child.getContent() = " + child.getContent());
         }
-        );
 
         // then
     }

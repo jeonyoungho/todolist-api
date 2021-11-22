@@ -47,7 +47,6 @@ public class TodoFactoryTest {
 
         // then
         Assertions.assertThat(result.getContent()).isEqualTo(content);
-        result);
     }
 
 }
