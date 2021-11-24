@@ -18,11 +18,11 @@ public class AddParticipantsRequestDto {
 
     @Schema(description = "추가할 회원 고유 식별자 리스트", required = true)
     @NotNull
-    private List<Long> memberIds;
+    private List<Long> accountIds;
 
     @Builder
-    public AddParticipantsRequestDto(Long workspaceId, List<Long> memberIds) {
+    public AddParticipantsRequestDto(Long workspaceId, List<Long> accountIds) {
         this.workspaceId = workspaceId;
-        this.memberIds = memberIds;
+        this.accountIds = accountIds;
     }
 }

@@ -3,12 +3,12 @@ package com.example.domain.todo;
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
-import com.example.domain.user.Address;
-import com.example.domain.user.User;
-import com.example.domain.user.UserRepository;
-import com.example.domain.user.UserRole;
+import com.example.domain.member.Member;
+import com.example.domain.member.MemberRepository;
+import com.example.factory.UserFactory;
 import com.example.service.TodoService;
 import com.example.service.WorkspaceService;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class TodoRepositoryImplTest {
     @Autowired
     TodoService todoService;
     @Autowired
-    UserRepository userRepository;
+    MemberRepository memberRepository;
     @Autowired
     WorkspaceService workspaceService;
 
@@ -42,40 +42,30 @@ public class TodoRepositoryImplTest {
     @Rollback(value = false)
     public void findByIdFetchJoinTodoWorkspaceGroupAndChilds_GivenValidInput_Success() throws Exception {
         // given
-        User user = createUser();
-        userRepository.save(user);
+        Member member = UserFactory.createUser();
+        memberRepository.save(member);
 
         List<Long> memberIds = new ArrayList<>();
         for(int i=0;i<20;i++) {
-            User saveUser = User.builder()
-                    .accountId("test-id" + i)
-                    .accountPw("test-pw" + i)
-                    .name("test-user" + i)
-                    .address(Address.builder()
-                            .street("test-street" + i)
-                            .city("test-city" + i)
-                            .zipcode("test-zipcode" + i)
-                            .build())
-                    .role(UserRole.ROLE_USER)
-                    .build();
-            userRepository.save(saveUser);
-            memberIds.add(saveUser.getId());
+            Member saveMember = UserFactory.createUser();
+            memberRepository.save(saveMember);
+            memberIds.add(saveMember.getId());
         }
 
         final String testWorkspaceName= "test-workspace";
         Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.builder()
-                .memberId(user.getId())
+                .userId(member.getId())
                 .name(testWorkspaceName)
                 .build());
 
         workspaceService.addParticipants(AddParticipantsRequestDto.builder()
                 .workspaceId(workspaceId)
-                .memberIds(memberIds)
+                .accountIds(memberIds)
                 .build());
 
         final String parentContent = "parent-todo-test-content";
         BasicTodoSaveRequestDto parentRequest = BasicTodoSaveRequestDto.builder()
-                .memberId(user.getId())
+                .memberId(member.getId())
                 .workspaceId(workspaceId)
                 .content(parentContent)
                 .parentId(null)
@@ -86,7 +76,7 @@ public class TodoRepositoryImplTest {
 
         final String childContent = "child-todo-test-content";
         BasicTodoSaveRequestDto childRequest = BasicTodoSaveRequestDto.builder()
-                .memberId(user.getId())
+                .memberId(member.getId())
                 .workspaceId(workspaceId)
                 .content(childContent)
                 .parentId(parentBasicTodoId)
@@ -97,7 +87,7 @@ public class TodoRepositoryImplTest {
 
         final String grandChildContent = "grand-child-todo-test-content";
         BasicTodoSaveRequestDto grandChildRequest = BasicTodoSaveRequestDto.builder()
-                .memberId(user.getId())
+                .memberId(member.getId())
                 .workspaceId(workspaceId)
                 .content(grandChildContent)
                 .parentId(parentBasicTodoId)
@@ -113,24 +103,11 @@ public class TodoRepositoryImplTest {
         Todo result = todoRepository.findByIdFetchJoinTodoWorkspaceGroupAndChilds(parentBasicTodoId);
 
         Set<Todo> childs = result.getChilds();
-        for (Todo child : childs) {
-            System.out.println("child.getContent() = " + child.getContent());
-        }
+//        for (Todo child : childs) {
+//            System.out.println("child.getContent() = " + child.getContent());
+//        }
 
         // then
-    }
-
-    private User createUser() {
-        return User.builder()
-                .accountId("test-id")
-                .accountPw("test-pw")
-                .name("test-user")
-                .address(Address.builder()
-                        .street("test-street")
-                        .city("test-city")
-                        .zipcode("test-zipcode")
-                        .build())
-                .role(UserRole.ROLE_USER)
-                .build();
+        Assertions.assertThat(childs.size()).isEqualTo(2);
     }
 }

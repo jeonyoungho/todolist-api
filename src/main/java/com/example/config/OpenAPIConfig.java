@@ -1,5 +1,6 @@
 package com.example.config;
 
+import com.example.config.jwt.TokenProvider;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -18,9 +19,9 @@ import java.util.List;
 @Configuration
 public class OpenAPIConfig {
 
-    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
-    private static final String BEARER_FORMAT = "JWT";
-    private static final String SCHEME = "BEARER";
+    private final String BEARER_FORMAT = "JWT";
+    private final String SECURITY_SCHEME_NAME = "Bearer Auth";
+    private final String SCHEME = TokenProvider.BEARER_TYPE;
 
     @Bean
     public OpenAPI openAPI(@Value("${springdoc.version}") String appVersion) {
@@ -40,15 +41,6 @@ public class OpenAPIConfig {
 
         return new OpenAPI()
                 .schemaRequirement(SECURITY_SCHEME_NAME, getSecurityScheme())
-//                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
-//                .components(new Components()
-//                        .addSecuritySchemes(securitySchemeName, new SecurityScheme()
-//                                .name(securitySchemeName)
-//                                .type(SecurityScheme.Type.HTTP)
-//                                .scheme("BEARER")
-//                                .bearerFormat("JWT")
-//                        )
-//                )
                 .security(getSecurityRequirement())
                 .info(info);
     }

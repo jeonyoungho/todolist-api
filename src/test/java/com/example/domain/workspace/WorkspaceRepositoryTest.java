@@ -1,11 +1,10 @@
 package com.example.domain.workspace;
 
-import com.example.domain.user.Address;
-import com.example.domain.user.User;
-import com.example.domain.user.UserRepository;
+import com.example.domain.member.Member;
+import com.example.domain.member.MemberRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.domain.user.UserRole;
+import com.example.factory.UserFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,22 +24,22 @@ public class WorkspaceRepositoryTest {
     @Autowired EntityManager em;
     @Autowired WorkspaceRepository workspaceRepository;
     @Autowired
-    UserRepository userRepository;
+    MemberRepository memberRepository;
 
     @Test
     public void findAllByMemberId_Basic_Success() {
         // given
-        User user = createUser();
-        userRepository.save(user);
+        Member member = UserFactory.createUser();
+        memberRepository.save(member);
 
         for (int i = 0; i < 10; i++) {
-            Participant participant = Participant.create(user);
+            Participant participant = Participant.create(member);
             Workspace workspace = Workspace.create("test-workspace" + i, participant);
             workspaceRepository.save(workspace);
         }
 
         // when
-        List<Workspace> workspaces = workspaceRepository.findAllByMemberId(user.getId());
+        List<Workspace> workspaces = workspaceRepository.findAllByMemberId(member.getId());
 
         // then
         assertThat(workspaces.size()).isEqualTo(10);
@@ -58,10 +57,10 @@ public class WorkspaceRepositoryTest {
     @Test
     public void findByIdWithFetchJoinParticipantMember_Basic_Success() throws Exception {
         // given
-        User user = createUser();
-        userRepository.save(user);
+        Member member = UserFactory.createUser();
+        memberRepository.save(member);
 
-        Participant participant = Participant.create(user);
+        Participant participant = Participant.create(member);
 
         final String testWorkspaceName= "test-workspace";
         Workspace workspace = Workspace.create(testWorkspaceName, participant);
@@ -75,20 +74,6 @@ public class WorkspaceRepositoryTest {
 
         // then
         assertThat(result.getParticipantGroup().getSize()).isEqualTo(1);
-    }
-
-    private User createUser() {
-        return User.builder()
-                .accountId("test-id")
-                .accountPw("test-pw")
-                .name("test-user")
-                .address(Address.builder()
-                        .street("test-street")
-                        .city("test-city")
-                        .zipcode("test-zipcode")
-                        .build())
-                .role(UserRole.ROLE_USER)
-                .build();
     }
 
 }

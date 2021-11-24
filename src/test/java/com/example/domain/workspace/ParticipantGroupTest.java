@@ -1,9 +1,8 @@
 package com.example.domain.workspace;
 
-import com.example.domain.user.Address;
-import com.example.domain.user.User;
-import com.example.domain.user.UserRepository;
-import com.example.domain.user.UserRole;
+import com.example.domain.member.Member;
+import com.example.domain.member.MemberRepository;
+import com.example.factory.UserFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,18 +17,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class ParticipantGroupTest {
 
     @Autowired
-    UserRepository userRepository;
+    MemberRepository memberRepository;
 
     @Test
     public void isExistByMemberId_GivenExistedMemberId_True() throws Exception {
         // given
-        User user = createUser();
-        userRepository.save(user);
+        Member member = UserFactory.createUser();
+        memberRepository.save(member);
 
-        ParticipantGroup participantGroup = createParticipatnGroup(user);
+        ParticipantGroup participantGroup = createParticipantGroup(member);
 
         // when
-        Boolean expected = participantGroup.isExistByMemberId(user.getId());
+        Boolean expected = participantGroup.isExistByMemberId(member.getId());
 
         // then
         Assertions.assertThat(expected).isTrue();
@@ -40,10 +39,10 @@ public class ParticipantGroupTest {
     @Test
     public void isExistByMemberId_GivenNotExistedMemberId_False() throws Exception {
         // given
-        User user = createUser();
-        userRepository.save(user);
+        Member member = UserFactory.createUser();
+        memberRepository.save(member);
 
-        ParticipantGroup participantGroup = createParticipatnGroup(user);
+        ParticipantGroup participantGroup = createParticipantGroup(member);
 
         // when
         Boolean expected = participantGroup.isExistByMemberId(1000L);
@@ -52,22 +51,8 @@ public class ParticipantGroupTest {
         Assertions.assertThat(expected).isFalse();
     }
 
-    private User createUser() {
-        return User.builder()
-                .accountId("test-id")
-                .accountPw("test-pw")
-                .name("test-user")
-                .address(Address.builder()
-                        .street("test-street")
-                        .city("test-city")
-                        .zipcode("test-zipcode")
-                        .build())
-                .role(UserRole.ROLE_USER)
-                .build();
-    }
-
-    private ParticipantGroup createParticipatnGroup(User user) {
-        Participant participant = Participant.create(user);
+    private ParticipantGroup createParticipantGroup(Member member) {
+        Participant participant = Participant.create(member);
         ParticipantGroup participantGroup = new ParticipantGroup();
         participantGroup.addParticipant(participant);
         return participantGroup;

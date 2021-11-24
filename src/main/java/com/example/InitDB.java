@@ -3,11 +3,11 @@ package com.example;
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
-import com.example.domain.user.Address;
-import com.example.domain.user.User;
-import com.example.domain.user.UserRepository;
+import com.example.domain.member.Address;
+import com.example.domain.member.Member;
+import com.example.domain.member.MemberRepository;
 import com.example.domain.todo.TodoRepository;
-import com.example.domain.user.UserRole;
+import com.example.domain.member.Authority;
 import com.example.service.TodoService;
 import com.example.service.WorkspaceService;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +36,19 @@ public class InitDB {
     @Transactional
     @RequiredArgsConstructor
     static class InitService {
-        private final UserRepository userRepository;
+        private final MemberRepository memberRepository;
         private final WorkspaceService workspaceService;
         private final TodoRepository todoRepository;
         private final TodoService todoService;
         private final BCryptPasswordEncoder passwordEncoder;
 
         public void dbInit1() {
-            User user = createUser();
-            userRepository.save(user);
+            Member member = createUser();
+            memberRepository.save(member);
 
             List<Long> memberIds = new ArrayList<>();
             for(int i=0;i<20;i++) {
-                User saveUser = User.builder()
+                Member saveMember = Member.builder()
                         .accountId("test-id" + i)
                         .accountPw(passwordEncoder.encode("test-pw" + i))
                         .name("test-user" + i)
@@ -57,26 +57,26 @@ public class InitDB {
                                 .city("test-city" + i)
                                 .zipcode("test-zipcode" + i)
                                 .build())
-                        .role(UserRole.ROLE_USER)
+                        .authority(Authority.ROLE_USER)
                         .build();
-                userRepository.save(saveUser);
-                memberIds.add(saveUser.getId());
+                memberRepository.save(saveMember);
+                memberIds.add(saveMember.getId());
             }
 
             final String testWorkspaceName= "test-workspace";
             Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.builder()
-                    .memberId(user.getId())
+                    .userId(member.getId())
                     .name(testWorkspaceName)
                     .build());
 
             workspaceService.addParticipants(AddParticipantsRequestDto.builder()
                     .workspaceId(workspaceId)
-                    .memberIds(memberIds)
+                    .accountIds(memberIds)
                     .build());
 
             final String parentContent = "parent-todo-test-content";
             BasicTodoSaveRequestDto parentRequest = BasicTodoSaveRequestDto.builder()
-                    .memberId(user.getId())
+                    .memberId(member.getId())
                     .workspaceId(workspaceId)
                     .content(parentContent)
                     .parentId(null)
@@ -87,7 +87,7 @@ public class InitDB {
 
             final String childContent = "child-todo-test-content";
             BasicTodoSaveRequestDto childRequest = BasicTodoSaveRequestDto.builder()
-                    .memberId(user.getId())
+                    .memberId(member.getId())
                     .workspaceId(workspaceId)
                     .content(childContent)
                     .parentId(parentBasicTodoId)
@@ -97,8 +97,8 @@ public class InitDB {
             Long childBasicTodoId = todoService.saveBasicTodo(childRequest);
         }
 
-        private User createUser() {
-            return User.builder()
+        private Member createUser() {
+            return Member.builder()
                     .accountId("test-id")
                     .accountPw(passwordEncoder.encode("test-pw"))
                     .name("test-user")
@@ -107,7 +107,7 @@ public class InitDB {
                             .city("test-city")
                             .zipcode("test-zipcode")
                             .build())
-                    .role(UserRole.ROLE_USER)
+                    .authority(Authority.ROLE_USER)
                     .build();
         }
 

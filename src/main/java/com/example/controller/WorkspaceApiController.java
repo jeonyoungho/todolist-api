@@ -1,6 +1,6 @@
 package com.example.controller;
 
-import com.example.controller.dto.user.UserResponseDto;
+import com.example.controller.dto.member.MemberResponseDto;
 import com.example.controller.dto.workspace.WorkspaceResponseDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
@@ -34,7 +34,7 @@ public class WorkspaceApiController {
     })
     @PostMapping("/workspace")
     public ResponseEntity<Long> save(@Valid @RequestBody WorkspaceSaveRequestDto rq) {
-        Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
+        final Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(savedWorkspaceId);
@@ -61,21 +61,21 @@ public class WorkspaceApiController {
     public ResponseEntity<WorkspaceResponseDto> findById(
             @Parameter(description = "작업 공간 고유 식별자", schema = @Schema(implementation = Long.class))
             @PathVariable Long workspaceId) {
-        WorkspaceResponseDto result = workspaceService.findById(workspaceId);
+        final WorkspaceResponseDto result = workspaceService.findById(workspaceId);
         return ResponseEntity.ok()
                 .body(result);
     }
 
     @Operation(summary = "작업 공간에 속한 회원 리스트 조회", description = "작업 공간 고유 식별자를 인자로 받아 작업 공간에 속한 회원 리스트를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "작업 공간에 속한 회원 리스트 조회 성공", content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "200", description = "작업 공간에 속한 회원 리스트 조회 성공", content = @Content(schema = @Schema(implementation = MemberResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근")
     })
-    @GetMapping("/workspace/members/{workspaceId}")
-    public ResponseEntity<List<UserResponseDto>> findMembersById(
+    @GetMapping("/workspace/{workspaceId}/members")
+    public ResponseEntity<List<MemberResponseDto>> findMembersById(
             @Parameter(description = "작업 공간 고유 식별자", schema = @Schema(implementation = Long.class))
             @PathVariable Long workspaceId) {
-        List<UserResponseDto> result = workspaceService.findMembersById(workspaceId);
+        final List<MemberResponseDto> result = workspaceService.findMembersById(workspaceId);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -89,7 +89,7 @@ public class WorkspaceApiController {
     public ResponseEntity<List<WorkspaceResponseDto>> findAllByMemberId(
             @Parameter(description = "회원 고유 식별자", schema = @Schema(implementation = Long.class))
             @PathVariable Long memberId) {
-        List<WorkspaceResponseDto> result = workspaceService.findAllByMemberId(memberId);
+        final List<WorkspaceResponseDto> result = workspaceService.findAllByMemberId(memberId);
         return ResponseEntity.ok()
                 .body(result);
     }

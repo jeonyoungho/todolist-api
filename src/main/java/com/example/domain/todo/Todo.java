@@ -1,6 +1,7 @@
 package com.example.domain.todo;
 
-import com.example.domain.user.User;
+import com.example.domain.BaseEntity;
+import com.example.domain.member.Member;
 import lombok.*;
 
 import javax.persistence.*;
@@ -16,7 +17,7 @@ import static javax.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @ToString(of = {"id", "member", "content", "todoWorkspaceGroup", "parent"})
-public abstract class Todo {
+public abstract class Todo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,8 +25,8 @@ public abstract class Todo {
     private Long id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "member_id")
-    private User user;
+    @JoinColumn(name = "user_id")
+    private Member member;
 
     @Column(length = 50, nullable = false)
     private String content;
@@ -44,8 +45,8 @@ public abstract class Todo {
     @Column(length = 20, nullable = false)
     private TodoStatus status;
 
-    public Todo(User user, TodoWorkspace todoWorkspace, String content, Todo parent, TodoStatus status) {
-        this.user = user;
+    public Todo(Member member, TodoWorkspace todoWorkspace, String content, Todo parent, TodoStatus status) {
+        this.member = member;
         this.content = content;
         this.parent = parent;
         this.status = status;

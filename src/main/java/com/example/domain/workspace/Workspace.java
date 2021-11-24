@@ -1,6 +1,7 @@
 package com.example.domain.workspace;
 
-import com.example.domain.user.User;
+import com.example.domain.BaseEntity;
+import com.example.domain.member.Member;
 import lombok.*;
 
 import javax.persistence.*;
@@ -10,7 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Workspace {
+public class Workspace extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,9 +48,9 @@ public class Workspace {
         participant.setWorkspace(this);
     }
 
-    public void addParticipants(List<User> users) {
-        for (User user : users) {
-            Participant participant = Participant.create(user);
+    public void addParticipants(List<Member> members) {
+        for (Member member : members) {
+            Participant participant = Participant.create(member);
             addParticipant(participant);
         }
     }

@@ -31,7 +31,7 @@ public class TodoApiController {
     })
     @PostMapping("/todo/basic")
     public ResponseEntity<Long> addBasicTodo(@Valid @RequestBody BasicTodoSaveRequestDto rq) {
-        Long savedTodoId = todoService.saveBasicTodo(rq);
+        final Long savedTodoId = todoService.saveBasicTodo(rq);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

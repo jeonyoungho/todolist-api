@@ -13,15 +13,15 @@ import javax.validation.constraints.NotNull;
 public class WorkspaceSaveRequestDto {
     @Schema(description = "회원 고유 식별자", required = true)
     @NotNull
-    private Long memberId;
+    private Long userId;
 
     @Schema(description = "작업 공간 이름", required = true)
     @NotBlank
     private String name;
 
     @Builder
-    public WorkspaceSaveRequestDto(Long memberId, String name) {
-        this.memberId = memberId;
+    public WorkspaceSaveRequestDto(Long userId, String name) {
+        this.userId = userId;
         this.name = name;
     }
 }

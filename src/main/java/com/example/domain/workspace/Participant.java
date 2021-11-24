@@ -1,10 +1,13 @@
 package com.example.domain.workspace;
 
-import com.example.domain.user.User;
+import com.example.domain.member.Member;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+
+import java.time.LocalDateTime;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -20,24 +23,28 @@ public class Participant {
     private Long id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "member_id")
-    private User user;
+    @JoinColumn(name = "user_id")
+    private Member member;
 
     @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "workspace_id")
     private Workspace workspace;
 
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
+
     @Builder
-    public Participant(User user, Workspace workspace) {
-        this.user = user;
+    public Participant(Member member, Workspace workspace) {
+        this.member = member;
         this.workspace = workspace;
     }
 
     //== 생성 메서드 ==//
-    public static Participant create(User user) {
+    public static Participant create(Member member) {
         return Participant.builder()
-                .user(user)
+                .member(member)
                 .build();
     }
 

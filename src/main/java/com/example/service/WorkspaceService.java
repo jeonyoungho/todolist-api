@@ -1,14 +1,16 @@
 package com.example.service;
 
-import com.example.controller.dto.user.UserResponseDto;
+import com.example.controller.dto.member.MemberResponseDto;
 import com.example.controller.dto.workspace.WorkspaceResponseDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
-import com.example.domain.user.User;
+import com.example.domain.member.Member;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
-import com.example.domain.user.UserRepository;
+import com.example.domain.member.MemberRepository;
 import com.example.domain.workspace.WorkspaceRepository;
+import com.example.exception.MemberNotFoundException;
+import com.example.exception.WorkspaceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,21 +23,21 @@ import java.util.stream.Collectors;
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public Long saveWorkspace(WorkspaceSaveRequestDto rq) {
-        Long memberId = rq.getMemberId();
+        Long userId = rq.getUserId();
         String name = rq.getName();
 
-        User user = userRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Could not found member with id " + memberId));
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberNotFoundException("Could not found member with id " + userId));
 
-        Participant participant = Participant.create(user);
+        Participant participant = Participant.create(member);
 
         Workspace workspace = Workspace.create(name, participant);
-
-        return workspaceRepository.save(workspace).getId();
+        workspaceRepository.save(workspace);
+        return workspace.getId();
     }
 
     @Transactional
@@ -43,17 +45,17 @@ public class WorkspaceService {
         Long workspaceId = rq.getWorkspaceId();
 
         Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
-                .orElseThrow(() -> new IllegalArgumentException("Could not found workspace with id " + workspaceId));
+                .orElseThrow(() -> new WorkspaceNotFoundException("Could not found workspace with id " + workspaceId));
 
-        List<User> users = userRepository.findAllById(rq.getMemberIds());
+        List<Member> members = memberRepository.findAllById(rq.getAccountIds());
 
-        workspace.addParticipants(users);
+        workspace.addParticipants(members);
     }
 
     @Transactional(readOnly = true)
     public WorkspaceResponseDto findById(Long workspaceId) {
         return new WorkspaceResponseDto(workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Could not found workspace with id " + workspaceId)));
+                .orElseThrow(() -> new WorkspaceNotFoundException("Could not found workspace with id " + workspaceId)));
     }
 
     @Transactional(readOnly = true)
@@ -64,11 +66,11 @@ public class WorkspaceService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDto> findMembersById(Long workspaceId) {
+    public List<MemberResponseDto> findMembersById(Long workspaceId) {
         Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
         return workspace.getParticipantGroup().getParticipants().stream()
-                .map(p -> p.getUser())
-                .map(UserResponseDto::new)
+                .map(p -> p.getMember())
+                .map(MemberResponseDto::new)
                 .collect(Collectors.toList());
     }
 
@@ -80,7 +82,6 @@ public class WorkspaceService {
     @Transactional
     public void deleteParticipantByMemberId(Long memberId, Long workspaceId) {
         Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
-
         if (workspace.getParticipantGroup().isExistByMemberId(memberId)) {
             workspace.getParticipantGroup().removeParticipant(memberId);
         }

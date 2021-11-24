@@ -6,8 +6,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+
+import java.time.LocalDateTime;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -29,6 +32,10 @@ public class TodoWorkspace {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "workspace_id")
     private Workspace workspace;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
 
     @Builder
     public TodoWorkspace(Todo todo, Workspace workspace) {

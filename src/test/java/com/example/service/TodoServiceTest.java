@@ -1,15 +1,14 @@
 package com.example.service;
 
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
-import com.example.domain.user.Address;
-import com.example.domain.user.User;
-import com.example.domain.user.UserRepository;
+import com.example.domain.member.Member;
+import com.example.domain.member.MemberRepository;
 import com.example.domain.todo.BasicTodo;
 import com.example.domain.todo.TodoRepository;
-import com.example.domain.user.UserRole;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
+import com.example.factory.UserFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,7 @@ public class TodoServiceTest {
     @Autowired
     EntityManager em;
     @Autowired
-    UserRepository userRepository;
+    MemberRepository memberRepository;
     @Autowired
     WorkspaceRepository workspaceRepository;
     @Autowired
@@ -39,21 +38,13 @@ public class TodoServiceTest {
 
     @Test
     public void saveBasicTodo_GivenValidInput_Success() throws Exception {
-        // given
-        User user = User.builder()
-                .accountId("test-id")
-                .accountPw("test-pw")
-                .name("test-user")
-                .address(Address.builder()
-                        .street("test-street")
-                        .city("test-city")
-                        .zipcode("test-zipcode")
-                        .build())
-                .role(UserRole.ROLE_USER)
-                .build();
-        userRepository.save(user);
+//        System.out.println("todoService = " + userRepository.findAll().size());
 
-        Participant participant = Participant.create(user);
+        // given
+        Member member = UserFactory.createUser();
+        memberRepository.save(member);
+
+        Participant participant = Participant.create(member);
 
         final String testWorkspaceName= "test-workspace";
         Workspace workspace = Workspace.create(testWorkspaceName, participant);
@@ -64,7 +55,7 @@ public class TodoServiceTest {
 
         final String content = "todo-test-content";
         BasicTodoSaveRequestDto request = BasicTodoSaveRequestDto.builder()
-                .memberId(user.getId())
+                .memberId(member.getId())
                 .workspaceId(workspace.getId())
                 .content(content)
                 .parentId(null)
