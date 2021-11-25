@@ -5,6 +5,7 @@ import com.example.controller.dto.jwt.TokenDto;
 import com.example.controller.dto.member.MemberListResponseDto;
 import com.example.controller.dto.member.MemberLoginRequestDto;
 import com.example.controller.dto.member.MemberSignUpRequestDto;
+import com.example.exception.ErrorDetails;
 import com.example.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,6 +32,7 @@ public class MemberApiController {
     @Operation(summary = "회원 가입", description = "회원 정보를 파라미터로 받아 새로운 회원을 등록합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "회원 가입 성공", content = @Content(schema = @Schema(implementation = Long.class))),
+            @ApiResponse(responseCode = "409", description = "아이디 중복", content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
     })
     @PostMapping("/member/signup")
     public ResponseEntity<Long> signUp(@Valid @RequestBody final MemberSignUpRequestDto rq) {
@@ -43,6 +45,8 @@ public class MemberApiController {
     @Operation(summary = "로그인", description = "계정 아이디 및 패스워드를 파라미터로 받아 로그인을 합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = TokenDto.class))),
+            @ApiResponse(responseCode = "400", description = "아이디 패스워드 불일치", content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근", content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping("/member/login")
     public ResponseEntity<TokenDto> login(@Valid @RequestBody MemberLoginRequestDto rq, HttpServletResponse response) {
@@ -60,9 +64,10 @@ public class MemberApiController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Refresh Token 재발급", description = "Access Token과 Refresh Token을 파라미터로 받아 Token을 재발급합니다.")
+    @Operation(summary = "Refresh 토큰 재발급", description = "Access 토큰과 Refresh 토큰을 파라미터로 받아 새로운 토큰을 재발급합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Refresh Token 재발급 성공", content = @Content(schema = @Schema(implementation = TokenDto.class))),
+            @ApiResponse(responseCode = "200", description = "Refresh 토큰 재발급 성공", content = @Content(schema = @Schema(implementation = TokenDto.class))),
+            @ApiResponse(responseCode = "400", description = "유효하지 않은 토큰 정보(Access, Refresh)", content = @Content(schema = @Schema(implementation = TokenDto.class))),
     })
     @PostMapping("/member/reissue")
     public ResponseEntity<TokenDto> reissue(@Valid @RequestBody ReissueRequestDto rq) {
@@ -73,6 +78,8 @@ public class MemberApiController {
     @Operation(summary = "전체 회원 정보 리스트 조회", description = "전체 회원 정보 리스트를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "전체 회원 정보 리스트 조회 성공", content = @Content(schema = @Schema(implementation = MemberListResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "인증이 안된 접근 ", content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
+            @ApiResponse(responseCode = "403", description = "권한이 없는 접근 ", content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
     })
     @GetMapping("/member/list")
     public ResponseEntity<MemberListResponseDto> findAll() {

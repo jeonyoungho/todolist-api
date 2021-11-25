@@ -24,4 +24,12 @@ public class WorkspaceSaveRequestDto {
         this.userId = userId;
         this.name = name;
     }
+
+    public static WorkspaceSaveRequestDto create(Long userId, String name) {
+        return WorkspaceSaveRequestDto.builder()
+                .userId(userId)
+                .name(name)
+                .build();
+    }
+
 }

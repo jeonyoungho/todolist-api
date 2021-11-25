@@ -7,16 +7,14 @@ import com.example.domain.member.MemberRepository;
 import com.example.domain.todo.*;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
-import com.example.exception.MemberNotFoundException;
-import com.example.exception.TodoInvalidUpdateException;
-import com.example.exception.TodoNotFoundException;
-import com.example.exception.WorkspaceNotFoundException;
+import com.example.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.util.Optional;
+
+import static com.example.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
@@ -25,39 +23,36 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final MemberRepository memberRepository;
     private final WorkspaceRepository workspaceRepository;
-    private final EntityManager em;
 
     @Transactional
     public Long saveBasicTodo(BasicTodoSaveRequestDto rq) {
-        Long memberId = rq.getMemberId();
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Could not found member with id: " + memberId));
+        Member member = memberRepository.findById(rq.getMemberId())
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        Todo parent = null;
+        Todo parentTodo = null;
         Long parentId = rq.getParentId();
         if (parentId != null) {
-            Optional findParent = todoRepository.findById(parentId);
-            parent = getParentTodo(parentId, findParent);
+            parentTodo = getParentTodo(parentId);
         }
 
-        Long workspaceId = rq.getWorkspaceId();
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new WorkspaceNotFoundException("Could not found workspace with id " + workspaceId));
+        Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
+                .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
+
         TodoWorkspace todoWorkspace = TodoWorkspace.create(workspace);
 
-        Todo todo = TodoFactory.createTodo(member, todoWorkspace, parent, rq);
+        Todo todo = TodoFactory.createTodo(member, todoWorkspace, parentTodo, rq);
         todoRepository.save(todo);
+
         return todo.getId();
     }
 
-    private Todo getParentTodo(Long parentId, Optional findParent) {
-        Todo parent;
-        if (findParent.isPresent()) {
-            parent = (BasicTodo) findParent.get();
-            return parent;
+    private Todo getParentTodo(Long parentId) {
+        Optional todo = todoRepository.findById(parentId);
+        if (!todo.isPresent()) {
+            throw new CustomException(TODO_NOT_FOUND);
         }
 
-        throw new TodoNotFoundException("Could not found todo with id: " + parentId);
+        return (BasicTodo) todo.get();
     }
 
     @Transactional
@@ -69,7 +64,7 @@ public class TodoService {
         }
 
         Todo todo = (Todo) todoRepository.findById(todoId)
-                .orElseThrow(() -> new TodoNotFoundException("Could not found todo with id " + todoId));
+                .orElseThrow(() -> new CustomException(TODO_NOT_FOUND));
 
         todo.changeStatus(status);
     }
@@ -77,14 +72,18 @@ public class TodoService {
     private void changeCompleteStatus(Long todoId, TodoStatus status) {
         Todo todo = todoRepository.findByIdFetchJoinChilds(todoId);
         if(!todo.isAllChildCompleted()) {
-            throw new TodoInvalidUpdateException("todo with id " + todoId + " has not completed all sub-todos");
+            throw new CustomException(ALL_CHILD_TODO_NOT_COMPLETED);
         }
 
         todo.changeStatus(status);
     }
 
     @Transactional
-    public void delete(Long todoId) throws Throwable { // TODO: 쿼리 최적화 생각해 볼 것 (하위 Todo들을 전부 가져와서 전부 완료됐는지 체크해보는 쿼리를 날리고 delete 쿼리 날리고?)
+    public void delete(Long todoId) { // TODO: 쿼리 최적화?
+        if (!todoRepository.existsById(todoId)) {
+            throw new CustomException(TODO_NOT_FOUND);
+        }
+
         Todo todo = todoRepository.findByIdFetchJoinTodoWorkspaceGroupAndChilds(todoId);
         if(todo.childsSize() > 0) {
             todo.clearChilds();

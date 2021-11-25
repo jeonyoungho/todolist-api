@@ -8,8 +8,7 @@ import com.example.controller.dto.member.MemberLoginRequestDto;
 import com.example.controller.dto.member.MemberSignUpRequestDto;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
-import com.example.exception.DuplicatedAccountIdException;
-import com.example.exception.InvalidTokenException;
+import com.example.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -18,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import static com.example.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
@@ -33,7 +34,7 @@ public class MemberService {
     public Long signUp(final MemberSignUpRequestDto rq) {
         String accountId = rq.getAccountId();
         if (memberRepository.existsByAccountId(accountId)) {
-            throw new DuplicatedAccountIdException("Already existed member's account id: " + accountId);
+            throw new CustomException(DUPLICATE_RESOURCE);
         }
 
         Member savedMember = memberRepository.save(rq.toEntity(passwordEncoder));
@@ -58,17 +59,16 @@ public class MemberService {
         return tokenDto;
     }
 
-    @Transactional(readOnly = true)
-    public MemberListResponseDto findAll() {
-        return MemberListResponseDto.builder()
-                .memberList(memberRepository.findAll())
-                .build();
+    @Transactional
+    public void logout(String accountId) {
+        refreshTokenService.delValue(accountId);
     }
 
+    @Transactional
     public TokenDto reissue(ReissueRequestDto rq) {
         // 1. Refresh Token 검증
         if (!tokenProvider.validateToken(rq.getRefreshToken())) {
-            throw new InvalidTokenException("Invalid refresh token.");
+            throw new CustomException(INVALID_REFRESH_TOKEN);
         }
 
         // 2. Access Token 에서 Member Id 가져오기
@@ -78,7 +78,7 @@ public class MemberService {
         String accountId = authentication.getName();
         String refreshToken = rq.getRefreshToken();
         String savedRefreshToken = refreshTokenService.getValue(accountId);
-        
+
         // 4. RefreshToken 일치하는지 검사
         validateSavedRefreshToken(accountId, refreshToken, savedRefreshToken);
 
@@ -93,17 +93,18 @@ public class MemberService {
 
     private void validateSavedRefreshToken(String accountId, String refreshToken, String savedRefreshToken) {
         if (!StringUtils.hasText(savedRefreshToken) ) {
-            throw new InvalidTokenException("AccountId is Already logged out. accountId. accountId: " + accountId);
+            throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
         }
 
         if (!refreshToken.equals(savedRefreshToken)) {
-            throw new InvalidTokenException("The input refresh token and the stored refresh token do not match. " +
-                    "input refresh token: " + refreshToken + ", saved refresh token: " + savedRefreshToken);
+            throw new CustomException(MISMATCH_REFRESH_TOKEN);
         }
     }
 
-    @Transactional
-    public void logout(String accountId) {
-        refreshTokenService.delValue(accountId);
+    @Transactional(readOnly = true)
+    public MemberListResponseDto findAll() {
+        return MemberListResponseDto.builder()
+                .memberList(memberRepository.findAll())
+                .build();
     }
 }

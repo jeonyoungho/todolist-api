@@ -1,10 +1,10 @@
 package com.example.config.jwt;
 
 import com.example.controller.dto.jwt.TokenDto;
+import com.example.exception.CustomException;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
+
+import static com.example.exception.ErrorCode.INVALID_ACCESS_TOKEN;
 
 @Slf4j
 @Component
@@ -88,7 +90,7 @@ public class TokenProvider {
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
         if (claims.get(AUTHORITIES_KEY) == null) {
-            throw new RuntimeException("Token does not contain authority information");
+            throw new CustomException(INVALID_ACCESS_TOKEN);
         }
 
         // 클레임에서 권한 정보 가져오기
@@ -107,13 +109,13 @@ public class TokenProvider {
             Jwts.parser().setSigningKey(key).parseClaimsJws(token);
             return true;
         } catch (MalformedJwtException exception) {
-            log.error("Invalid JWT signature.");
+            log.error("Invalid JWT signature. token : {},", token);
         } catch (ExpiredJwtException exception) {
-            log.info("Expired JWT token");
+            log.info("Expired JWT token. token : {}, token");
         } catch (UnsupportedJwtException exception) {
-            log.info("Unsupported JWT token.");
+            log.info("Unsupported JWT token. token : {}, token");
         } catch (IllegalArgumentException exception) {
-            log.info("Invalid JWT token.");
+            log.info("Invalid JWT token. token : {}, token");
         }
         return false;
     }

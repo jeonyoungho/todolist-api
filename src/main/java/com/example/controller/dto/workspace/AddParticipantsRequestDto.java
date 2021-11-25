@@ -25,4 +25,11 @@ public class AddParticipantsRequestDto {
         this.workspaceId = workspaceId;
         this.accountIds = accountIds;
     }
+
+    public static AddParticipantsRequestDto create(Long workspaceId, List<Long> accountIds) {
+        return AddParticipantsRequestDto.builder()
+                .workspaceId(workspaceId)
+                .accountIds(accountIds)
+                .build();
+    }
 }

@@ -19,11 +19,11 @@ public abstract class TodoSaveRequestDto {
     @NotNull
     private Long workspaceId;
 
-    @Schema(description = "할 일(Todo) 내용", maxLength = 50, required = true)
+    @Schema(description = "Todo 내용", maxLength = 50, required = true)
     @NotBlank
     private String content;
 
-    @Schema(description = "상위 할 일(Todo) 고유 식별자", required = true)
+    @Schema(description = "상위 Todo 고유 식별자", required = true)
     @NotNull
     private Long parentId;
 

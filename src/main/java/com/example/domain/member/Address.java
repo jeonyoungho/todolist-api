@@ -28,4 +28,12 @@ public class Address {
         this.street = street;
         this.zipcode = zipcode;
     }
+
+    public static Address create(String city, String street, String zipcode) {
+        return Address.builder()
+                .city(city)
+                .street(street)
+                .zipcode(zipcode)
+                .build();
+    }
 }

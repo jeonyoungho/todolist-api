@@ -5,10 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 @Schema(description = "기본 TODO 등록 요청 DTO")
 @Getter
 @NoArgsConstructor
@@ -20,5 +16,15 @@ public class BasicTodoSaveRequestDto extends TodoSaveRequestDto {
     public BasicTodoSaveRequestDto(Long memberId, Long workspaceId, String content, Long parentId, int expectedTime) {
         super(memberId, workspaceId, content, parentId);
         this.expectedTime = expectedTime;
+    }
+
+    public static BasicTodoSaveRequestDto create(Long memberId, Long workspaceId, String content, Long parentId, int expectedTime) {
+        return BasicTodoSaveRequestDto.builder()
+                .memberId(memberId)
+                .workspaceId(workspaceId)
+                .content(content)
+                .parentId(parentId)
+                .expectedTime(expectedTime)
+                .build();
     }
 }

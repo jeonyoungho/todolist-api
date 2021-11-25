@@ -44,11 +44,18 @@ public class Member extends BaseTimeEntity implements Serializable {
         this.authority = authority;
     }
 
-    public void setEnable(Boolean enable) {
-        isEnable = enable;
+    public static Member create(String accountId, String accountPw, String name, String city, String street, String zipcode, Authority authority) {
+        Address address = Address.create(city, street, zipcode);
+        return create(accountId, accountPw, name, address, authority);
     }
 
-    public void setRole(Authority authority) {
-        this.authority = authority;
+    public static Member create(String accountId, String accountPw, String name, Address address, Authority authority) {
+        return Member.builder()
+                .accountId(accountId)
+                .accountPw(accountPw)
+                .name(name)
+                .address(address)
+                .authority(authority)
+                .build();
     }
 }

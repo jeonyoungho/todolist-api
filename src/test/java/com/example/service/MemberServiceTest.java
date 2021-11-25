@@ -18,16 +18,9 @@ public class MemberServiceTest {
     MemberService memberService;
 
     @Test
-    public void signUp_GivenValidInput_Success() throws Exception {
+    public void signUp_GivenValidInput_Success() {
         // given
-        MemberSignUpRequestDto request = MemberSignUpRequestDto.builder()
-                .accountId("signUpMember1")
-                .accountPw("signUpMember1pw")
-                .name("alice")
-                .city("city")
-                .street("street")
-                .zipcode("zipcode")
-                .build();
+        MemberSignUpRequestDto request = MemberSignUpRequestDto.create("test-member", "test-pw", "test-name", "test-city", "test-street", "test-zipcode");
         
         // when
         Long savedId = memberService.signUp(request);

@@ -17,6 +17,14 @@ spring:
         batch_fetch_style: dynamic
     open-in-view: true # false
 
+server:
+  error:
+    include-exception: false
+    include-message: always
+    include-stacktrace: on_param
+    whitelabel:
+      enabled: true
+
 redis:
   host: 127.0.0.1
   port: 6379

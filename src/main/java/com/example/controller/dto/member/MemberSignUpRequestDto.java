@@ -63,4 +63,15 @@ public class MemberSignUpRequestDto {
 
         return member;
     }
+
+    public static MemberSignUpRequestDto create(String accountId, String accountPw, String name, String city, String street, String zipcode) {
+        return MemberSignUpRequestDto.builder()
+                .accountId(accountId)
+                .accountPw(accountPw)
+                .name(name)
+                .city(city)
+                .street(street)
+                .zipcode(zipcode)
+                .build();
+    }
 }

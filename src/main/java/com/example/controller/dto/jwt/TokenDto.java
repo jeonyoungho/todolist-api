@@ -1,14 +1,21 @@
 package com.example.controller.dto.jwt;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 public class TokenDto {
+    @Schema(description = "권한 타입")
     private String grantedType;
+
+    @Schema(description = "Access 토큰")
     private String accessToken;
+
+    @Schema(description = "Refresh 토큰")
     private String refreshToken;
+
+    @Schema(description = "Access 토큰 만료시간")
     private Long accessTokenExpiresIn;
 
     @Builder

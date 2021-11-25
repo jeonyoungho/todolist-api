@@ -3,17 +3,18 @@ package com.example.domain.todo;
 import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
 import com.example.controller.dto.workspace.AddParticipantsRequestDto;
 import com.example.controller.dto.workspace.WorkspaceSaveRequestDto;
+import com.example.domain.member.Address;
+import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
-import com.example.factory.UserFactory;
 import com.example.service.TodoService;
 import com.example.service.WorkspaceService;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,24 +39,29 @@ public class TodoRepositoryImplTest {
     @Autowired
     WorkspaceService workspaceService;
 
+    private Member member;
+
+    @Before
+    public void setUp() {
+        member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+    }
+
     @Test
-    @Rollback(value = false)
-    public void findByIdFetchJoinTodoWorkspaceGroupAndChilds_GivenValidInput_Success() throws Exception {
+    public void findByIdFetchJoinTodoWorkspaceGroupAndChilds_GivenValidInput_Success() {
         // given
-        Member member = UserFactory.createUser();
         memberRepository.save(member);
 
         List<Long> memberIds = new ArrayList<>();
         for(int i=0;i<20;i++) {
-            Member saveMember = UserFactory.createUser();
+            Address address = Address.create("test-city", "test-street", "test-zipcode");
+            Member saveMember = Member.create("test-id" + i, "test-pw", "test-name", address, Authority.ROLE_USER);
             memberRepository.save(saveMember);
             memberIds.add(saveMember.getId());
         }
 
-        final String testWorkspaceName= "test-workspace";
         Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.builder()
                 .userId(member.getId())
-                .name(testWorkspaceName)
+                .name("test-workspace")
                 .build());
 
         workspaceService.addParticipants(AddParticipantsRequestDto.builder()

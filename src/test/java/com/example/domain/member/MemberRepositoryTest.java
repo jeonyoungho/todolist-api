@@ -1,6 +1,6 @@
 package com.example.domain.member;
 
-import com.example.factory.UserFactory;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,23 +21,28 @@ public class MemberRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
 
+    private Member member;
+
+    @Before
+    public void setUp() {
+        member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+    }
+
     @Test
     public void save_GivenValidInput_Success() {
         // given
-        Member member = UserFactory.createUser();
         Member saveMember = memberRepository.save(member);
 
         // when
-        Member findMember = memberRepository.findById(member.getId()).get();
+        Member findMember = memberRepository.findById(saveMember.getId()).get();
 
         // then
         assertThat(findMember).isEqualTo(saveMember);
     }
 
     @Test
-    public void findById_GivenInValidInput_Fail() throws Exception {
+    public void findById_GivenInValidInput_Fail() {
         // given
-        Member member = UserFactory.createUser();
         memberRepository.save(member);
 
         // when

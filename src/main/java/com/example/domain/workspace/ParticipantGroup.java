@@ -1,5 +1,7 @@
 package com.example.domain.workspace;
 
+import com.example.exception.CustomException;
+import com.example.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,7 +45,7 @@ public class ParticipantGroup {
                 .parallel()
                 .filter(p -> p.getMember().getId().equals(memberId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Could not found participant with id " + memberId));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     public Boolean isExistByMemberId(Long memberId) {
