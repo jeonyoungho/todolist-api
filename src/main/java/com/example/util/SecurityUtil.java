@@ -15,7 +15,7 @@ public class SecurityUtil {
     public static String getCurrentAccountId() {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if(authentication == null || StringUtils.hasText(authentication.getName())) {
+        if(authentication == null || !StringUtils.hasText(authentication.getName())) {
             throw new CustomException(NOT_FOUND_AUTHENTICATION_INFO);
         }
 

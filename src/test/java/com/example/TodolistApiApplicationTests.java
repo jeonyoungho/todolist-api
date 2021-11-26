@@ -23,7 +23,7 @@ class TodolistApiApplicationTests {
 		long now1 = (new Date()).getTime();
 		long now2 = System.currentTimeMillis();
 		if (now1 == now2) {
-			System.out.println("euql!");
+			System.out.println("equal!");
 		}
 	}
 

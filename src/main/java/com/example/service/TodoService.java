@@ -1,14 +1,19 @@
 package com.example.service;
 
-import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
 import com.example.controller.dto.todo.TodoStatusUpdateRequestDto;
+import com.example.controller.dto.todo.basic.BasicTodoResponseDto;
+import com.example.controller.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
 import com.example.domain.todo.*;
+import com.example.domain.workspace.ParticipantGroup;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import com.example.exception.CustomException;
+import com.example.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +28,7 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final MemberRepository memberRepository;
     private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     public Long saveBasicTodo(BasicTodoSaveRequestDto rq) {
@@ -47,13 +53,35 @@ public class TodoService {
     }
 
     private Todo getParentTodo(Long parentId) {
-        Optional todo = todoRepository.findById(parentId);
-        if (!todo.isPresent()) {
+        Optional optional = todoRepository.findById(parentId);
+        if (!optional.isPresent()) {
             throw new CustomException(TODO_NOT_FOUND);
         }
 
-        return (BasicTodo) todo.get();
+        Todo parentTodo = (Todo) optional.get();
+        if (parentTodo.hasParent()) {
+            throw new CustomException(INVALID_PARENT_TODO);
+        }
+
+        return parentTodo;
     }
+
+    @Transactional(readOnly = true)
+    public Page<BasicTodoResponseDto> findAllBasicTodos(Pageable pageable, Long workspaceId, TodoStatus status) {
+        if (!workspaceRepository.existsById(workspaceId)) {
+            throw new CustomException(WORKSPACE_NOT_FOUND);
+        }
+
+        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        ParticipantGroup participantGroup = workspace.getParticipantGroup();
+
+        if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
+            throw new CustomException(UNAUTHORIZED_MEMBER);
+        }
+
+        return todoRepository.findAllBasicTodos(pageable, workspaceId, status);
+    }
+
 
     @Transactional
     public void changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) throws Throwable {
@@ -91,4 +119,6 @@ public class TodoService {
 
         todoRepository.deleteById(todoId);
     }
+
+
 }

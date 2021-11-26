@@ -75,4 +75,8 @@ public abstract class Todo extends BaseEntity {
     public int childsSize() {
         return getChilds().size();
     }
+
+    public boolean hasParent() {
+        return parent != null;
+    }
 }

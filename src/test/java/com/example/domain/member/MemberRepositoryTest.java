@@ -52,5 +52,4 @@ public class MemberRepositoryTest {
         assertThat(result.isPresent()).isFalse();
     }
 
-
 }

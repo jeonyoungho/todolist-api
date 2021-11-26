@@ -100,7 +100,7 @@ public class WorkspaceApiController {
             @ApiResponse(responseCode = "403", description = "권한이 없는 접근 ", content = @Content(schema = @Schema(implementation = ErrorDetails.class))),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근", content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
     })
-    @GetMapping("/workspace/all/{memberId}")
+    @GetMapping("/workspaces/all/{memberId}")
     public ResponseEntity<List<WorkspaceResponseDto>> findAllByMemberId(
             @Parameter(description = "회원 고유 식별자", schema = @Schema(implementation = Long.class))
             @PathVariable Long memberId) {

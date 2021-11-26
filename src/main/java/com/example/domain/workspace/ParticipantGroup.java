@@ -23,10 +23,6 @@ public class ParticipantGroup {
     @OneToMany(mappedBy = "workspace", cascade = ALL, orphanRemoval = true)
     private List<Participant> participants = new ArrayList<>();
 
-    public ParticipantGroup(List<Participant> participants) {
-        this.participants = participants;
-    }
-
     public void addParticipant(Participant participant) {
         participants.add(participant);
     }
@@ -51,6 +47,11 @@ public class ParticipantGroup {
     public Boolean isExistByMemberId(Long memberId) {
         return participants.stream()
                 .anyMatch(p -> memberId.equals(p.getMember().getId()));
+    }
+
+    public Boolean isExistByAccountId(String accountId) {
+        return participants.stream()
+                .anyMatch(p -> accountId.equals(p.getMember().getAccountId()));
     }
 
 }

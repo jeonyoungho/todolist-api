@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class WorkspaceServiceTest {
 
+    @Autowired
+    EntityManager em;
     @Autowired
     WorkspaceService workspaceService;
     @Autowired
@@ -48,10 +51,10 @@ public class WorkspaceServiceTest {
         memberRepository.save(member);
 
         final String testWorkspaceName = "test-workspace-name";
-        WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), testWorkspaceName);
+        WorkspaceSaveRequestDto requestDto = WorkspaceSaveRequestDto.create(member.getId(), testWorkspaceName);
 
         // when
-        Long workspaceId = workspaceService.saveWorkspace(rq);
+        Long workspaceId = workspaceService.saveWorkspace(requestDto);
         Workspace result = workspaceRepository.findById(workspaceId).get();
 
         // then
@@ -64,6 +67,10 @@ public class WorkspaceServiceTest {
         // given
         memberRepository.save(member);
 
+        Participant participant = Participant.create(member);
+        Workspace workspace = Workspace.create("test-workspace", participant);
+        workspaceRepository.save(workspace);
+
         List<Long> memberIds = new ArrayList<>();
         for(int i=0;i<20;i++) {
             Member saveMember = Member.create("test-id" + i, "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
@@ -71,12 +78,10 @@ public class WorkspaceServiceTest {
             memberIds.add(saveMember.getId());
         }
 
-        Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.create(member.getId(), "test-workspace-name"));
-
         // when
-        workspaceService.addParticipants(AddParticipantsRequestDto.create(workspaceId, memberIds));
+        workspaceService.addParticipants(AddParticipantsRequestDto.create(workspace.getId(), memberIds));
 
-        Workspace result = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        Workspace result = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspace.getId());
         List<Participant> participants = result.getParticipantGroup().getParticipants();
 
         // then
@@ -88,11 +93,13 @@ public class WorkspaceServiceTest {
         // given
         memberRepository.save(member);
 
-        final String testWorkspaceName= "test-workspace";
-        Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.create(member.getId(), testWorkspaceName));
+        final String testWorkspaceName = "test-workspace-name";
+        Participant participant = Participant.create(member);
+        Workspace workspace = Workspace.create(testWorkspaceName, participant);
+        workspaceRepository.save(workspace);
 
         // when
-        WorkspaceResponseDto result = workspaceService.findById(workspaceId);
+        WorkspaceResponseDto result = workspaceService.findById(workspace.getId());
 
         // then
         assertThat(result.getName()).isEqualTo(testWorkspaceName);
@@ -102,11 +109,14 @@ public class WorkspaceServiceTest {
     public void deleteParticipantByMemberId_GivenExistedMember_True() {
         // given
         memberRepository.save(member);
-        Long workspaceId = workspaceService.saveWorkspace(WorkspaceSaveRequestDto.create(member.getId(), "test-workspace"));
+
+        Participant participant = Participant.create(member);
+        Workspace workspace = Workspace.create("test-workspace-name", participant);
+        workspaceRepository.save(workspace);
 
         // when
-        workspaceService.deleteParticipantByMemberId(member.getId(), workspaceId);
-        Workspace result = workspaceRepository.findById(workspaceId).get();
+        workspaceService.deleteParticipantByMemberId(member.getId(), workspace.getId());
+        Workspace result = workspaceRepository.findById(workspace.getId()).get();
 
         // then
         assertThat(result.getParticipantGroup().getSize()).isEqualTo(0);
@@ -117,21 +127,21 @@ public class WorkspaceServiceTest {
         // given
         memberRepository.save(member);
 
-        List<Long> memberIds = new ArrayList<>();
+        Participant participant = Participant.create(member);
+        Workspace workspace = Workspace.create("test-workspace-name", participant);
+
+        List<Member> members = new ArrayList<>();
         for(int i=0;i<20;i++) {
             Member saveMember = Member.create("test-id" + i, "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
             memberRepository.save(saveMember);
-            memberIds.add(saveMember.getId());
+            members.add(saveMember);
         }
 
-        WorkspaceSaveRequestDto workspaceSaveRequestDto = WorkspaceSaveRequestDto.create(member.getId(), "test-workspace");
-        Long workspaceId = workspaceService.saveWorkspace(workspaceSaveRequestDto);
-
-        AddParticipantsRequestDto addParticipantsRequestDto = AddParticipantsRequestDto.create(workspaceId, memberIds);
-        workspaceService.addParticipants(addParticipantsRequestDto);
+        workspace.addParticipants(members);
+        workspaceRepository.save(workspace);
 
         // when
-        List<MemberResponseDto> results = workspaceService.findMembersById(workspaceId);
+        List<MemberResponseDto> results = workspaceService.findMembersById(workspace.getId());
 
         // then
         assertThat(results.size()).isEqualTo(21);

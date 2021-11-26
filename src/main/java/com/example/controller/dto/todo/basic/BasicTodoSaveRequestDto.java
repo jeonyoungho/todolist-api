@@ -1,5 +1,6 @@
-package com.example.controller.dto.todo;
+package com.example.controller.dto.todo.basic;
 
+import com.example.controller.dto.todo.TodoSaveRequestDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;

@@ -57,9 +57,8 @@ public class WorkspaceRepositoryTest {
         // given
         memberRepository.save(member);
 
-        Participant participant = Participant.create(member);
-
         final String testWorkspaceName= "test-workspace";
+        Participant participant = Participant.create(member);
         Workspace workspace = Workspace.create(testWorkspaceName, participant);
         workspaceRepository.save(workspace);
 

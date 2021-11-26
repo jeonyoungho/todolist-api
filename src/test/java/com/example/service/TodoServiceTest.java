@@ -1,6 +1,6 @@
 package com.example.service;
 
-import com.example.controller.dto.todo.BasicTodoSaveRequestDto;
+import com.example.controller.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
@@ -39,7 +39,6 @@ public class TodoServiceTest {
         memberRepository.save(member);
 
         Participant participant = Participant.create(member);
-
         Workspace workspace = Workspace.create("test-workspace", participant);
         workspaceRepository.save(workspace);
 

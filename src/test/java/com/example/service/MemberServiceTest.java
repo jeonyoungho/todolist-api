@@ -20,10 +20,10 @@ public class MemberServiceTest {
     @Test
     public void signUp_GivenValidInput_Success() {
         // given
-        MemberSignUpRequestDto request = MemberSignUpRequestDto.create("test-member", "test-pw", "test-name", "test-city", "test-street", "test-zipcode");
+        MemberSignUpRequestDto requestDto = MemberSignUpRequestDto.create("test-member", "test-pw", "test-name", "test-city", "test-street", "test-zipcode");
         
         // when
-        Long savedId = memberService.signUp(request);
+        Long savedId = memberService.signUp(requestDto);
 
         // then
         Assertions.assertThat(savedId).isGreaterThanOrEqualTo(0L);
