@@ -1,6 +1,6 @@
 package com.example.domain.todo;
 
-import com.example.controller.dto.todo.basic.BasicTodoResponseDto;
+import com.example.api.dto.todo.basic.BasicTodoResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

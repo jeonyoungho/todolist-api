@@ -1,6 +1,6 @@
 package com.example.config.security;
 
-import com.example.config.jwt.*;
+import com.example.jwt.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

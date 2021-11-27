@@ -1,6 +1,6 @@
 package com.example.config;
 
-import com.example.config.jwt.TokenProvider;
+import com.example.jwt.TokenProvider;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;

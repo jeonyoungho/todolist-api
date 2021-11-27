@@ -1,6 +1,6 @@
 package com.example.domain.todo;
 
-import com.example.controller.dto.todo.basic.BasicTodoSaveRequestDto;
+import com.example.api.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.workspace.Participant;

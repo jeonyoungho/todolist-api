@@ -1,13 +1,13 @@
 package com.example.domain.todo;
 
-import com.example.controller.dto.todo.basic.BasicTodoResponseDto;
+import com.example.api.dto.todo.basic.BasicTodoResponseDto;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
-import com.example.service.TodoService;
+import com.example.api.service.TodoService;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;

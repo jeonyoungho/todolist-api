@@ -1,7 +1,7 @@
 package com.example.domain.todo;
 
-import com.example.controller.dto.todo.basic.BasicTodoResponseDto;
-import com.example.controller.dto.todo.basic.QBasicTodoResponseDto;
+import com.example.api.dto.todo.basic.BasicTodoResponseDto;
+import com.example.api.dto.todo.basic.QBasicTodoResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;

@@ -5,5 +5,5 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TodoConstants {
-    public static final String BASIC_TODO = "basic";
+    public static final String BASIC_TODO_TYPE = "basic";
 }

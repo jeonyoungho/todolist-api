@@ -11,7 +11,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Getter
-@DiscriminatorValue(TodoConstants.BASIC_TODO)
+@DiscriminatorValue(TodoConstants.BASIC_TODO_TYPE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class BasicTodo extends Todo {
