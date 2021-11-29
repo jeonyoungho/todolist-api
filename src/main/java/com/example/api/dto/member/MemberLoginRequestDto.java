@@ -1,6 +1,7 @@
 package com.example.api.dto.member;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
@@ -15,6 +16,19 @@ public class MemberLoginRequestDto {
     @Schema(description = "회원 계정 패스워드", maxLength = 20, required = true)
     @NotBlank
     private String accountPw;
+
+    @Builder
+    public MemberLoginRequestDto(String accountId, String accountPw) {
+        this.accountId = accountId;
+        this.accountPw = accountPw;
+    }
+
+    public static MemberLoginRequestDto create(String accountId, String accountPw) {
+        return MemberLoginRequestDto.builder()
+                .accountId(accountId)
+                .accountPw(accountPw)
+                .build();
+    }
 
     public UsernamePasswordAuthenticationToken toAuthentication() {
         return new UsernamePasswordAuthenticationToken(accountId, accountPw);

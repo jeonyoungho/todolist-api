@@ -1,6 +1,5 @@
 package com.example.api.service;
 
-import com.example.jwt.TokenProvider;
 import com.example.api.dto.jwt.ReissueRequestDto;
 import com.example.api.dto.jwt.TokenDto;
 import com.example.api.dto.member.MemberListResponseDto;
@@ -9,6 +8,7 @@ import com.example.api.dto.member.MemberSignUpRequestDto;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
 import com.example.exception.CustomException;
+import com.example.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -38,6 +38,7 @@ public class MemberService {
         }
 
         Member savedMember = memberRepository.save(rq.toEntity(passwordEncoder));
+
         return savedMember.getId();
     }
 
@@ -47,7 +48,8 @@ public class MemberService {
         UsernamePasswordAuthenticationToken authenticationToken = rq.toAuthentication();
 
         // 2. 실제로 검증 (사용자 비밀번호 체크)가 이루어지는 부분
-        // authenticate 메서드가 실행이 될 때 CustomUserDetailsServices에서 만들었떤 loadUserByUsername 메서드가 실행됨
+        // authenticate 메서드가 실행이 될 때 CustomUserDetailsServices에서 만들었던 loadUserByUsername 메서드가 실행됨
+
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         // 3. 인증 정보를 기반으로 JWT 토큰 생성

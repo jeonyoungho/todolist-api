@@ -60,7 +60,7 @@ public class MemberSignUpRequestDto {
                 .address(address)
                 .authority(Authority.ROLE_USER)
                 .build();
-
+        
         return member;
     }
 
