@@ -24,6 +24,7 @@ public class BasicTodo extends Todo {
         this.expectedTime = expectedTime;
     }
 
+    //== 생성 메서드 ==//
     public static BasicTodo createBasicTodo(Member member, TodoWorkspace todoWorkspace, String content, Todo parent, int expectedTime) {
         return BasicTodo.builder()
                 .member(member)

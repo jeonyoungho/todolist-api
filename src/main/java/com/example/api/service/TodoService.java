@@ -58,7 +58,7 @@ public class TodoService {
         }
 
         Todo parentTodo = (Todo) optional.get();
-        if (parentTodo.hasParent()) {
+        if (parentTodo.hasParent()) { // 만약 부모 Todo 가 부모를 가지고 있을 경우 예외 발생
             throw new CustomException(INVALID_PARENT_TODO);
         }
 
@@ -98,7 +98,7 @@ public class TodoService {
 
     private void changeCompleteStatus(Long todoId, TodoStatus status) {
         Todo todo = todoRepository.findByIdFetchJoinChilds(todoId);
-        if(!todo.isAllChildCompleted()) {
+        if(!todo.isAllChildsCompleted()) {
             throw new CustomException(ALL_CHILD_TODO_NOT_COMPLETED);
         }
 

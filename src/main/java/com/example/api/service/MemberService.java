@@ -49,7 +49,6 @@ public class MemberService {
 
         // 2. 실제로 검증 (사용자 비밀번호 체크)가 이루어지는 부분
         // authenticate 메서드가 실행이 될 때 CustomUserDetailsServices에서 만들었던 loadUserByUsername 메서드가 실행됨
-
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
@@ -78,11 +77,11 @@ public class MemberService {
 
         // 3. Refresh Token 저장소에서 accountId를 기반으로 Refresh Token 값 가져옴
         String accountId = authentication.getName();
-        String refreshToken = rq.getRefreshToken();
+        String receivedRefreshToken = rq.getRefreshToken();
         String savedRefreshToken = refreshTokenService.getValue(accountId);
 
         // 4. RefreshToken 일치하는지 검사
-        validateSavedRefreshToken(accountId, refreshToken, savedRefreshToken);
+        validateSavedRefreshToken(receivedRefreshToken, savedRefreshToken);
 
         // 5. 새로운 토큰 생성
         TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
@@ -93,12 +92,12 @@ public class MemberService {
         return tokenDto;
     }
 
-    private void validateSavedRefreshToken(String accountId, String refreshToken, String savedRefreshToken) {
+    private void validateSavedRefreshToken(String receivedRefreshToken, String savedRefreshToken) {
         if (!StringUtils.hasText(savedRefreshToken) ) {
             throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
         }
 
-        if (!refreshToken.equals(savedRefreshToken)) {
+        if (!receivedRefreshToken.equals(savedRefreshToken)) {
             throw new CustomException(MISMATCH_REFRESH_TOKEN);
         }
     }

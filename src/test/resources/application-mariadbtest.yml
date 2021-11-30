@@ -27,7 +27,7 @@ jwt:
 api:
   version: /api/v1
 
-logging:
-  level:
-    org.hibernate.SQL: debug
+#logging:
+#  level:
+#    org.hibernate.SQL: debug
 #    org.hibernate.type: trace

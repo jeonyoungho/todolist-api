@@ -24,12 +24,12 @@ public abstract class Todo extends BaseEntity {
     @Column(name = "todo_id")
     private Long id;
 
+    @Column(length = 50, nullable = false)
+    private String content;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private Member member;
-
-    @Column(length = 50, nullable = false)
-    private String content;
 
     @Embedded
     private TodoWorkspaceGroup todoWorkspaceGroup = new TodoWorkspaceGroup();
@@ -64,7 +64,7 @@ public abstract class Todo extends BaseEntity {
         this.status = status;
     }
 
-    public Boolean isAllChildCompleted() {
+    public Boolean isAllChildsCompleted() {
         return childs.stream().allMatch(t -> TodoStatus.COMPLETED.equals(t.status));
     }
 
@@ -76,7 +76,7 @@ public abstract class Todo extends BaseEntity {
         return getChilds().size();
     }
 
-    public boolean hasParent() {
+    public Boolean hasParent() {
         return parent != null;
     }
 }

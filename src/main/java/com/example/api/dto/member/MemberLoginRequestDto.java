@@ -23,13 +23,6 @@ public class MemberLoginRequestDto {
         this.accountPw = accountPw;
     }
 
-    public static MemberLoginRequestDto create(String accountId, String accountPw) {
-        return MemberLoginRequestDto.builder()
-                .accountId(accountId)
-                .accountPw(accountPw)
-                .build();
-    }
-
     public UsernamePasswordAuthenticationToken toAuthentication() {
         return new UsernamePasswordAuthenticationToken(accountId, accountPw);
     }

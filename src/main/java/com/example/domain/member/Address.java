@@ -29,6 +29,7 @@ public class Address {
         this.zipcode = zipcode;
     }
 
+    //== 생성 메서드 ==//
     public static Address create(String city, String street, String zipcode) {
         return Address.builder()
                 .city(city)

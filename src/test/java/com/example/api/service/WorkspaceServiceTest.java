@@ -10,32 +10,33 @@ import com.example.domain.member.MemberRepository;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
+import com.example.exception.CustomException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.persistence.EntityManager;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
+@RunWith(MockitoJUnitRunner.class)
 public class WorkspaceServiceTest {
 
-    @Autowired
-    EntityManager em;
-    @Autowired
+    @InjectMocks
     WorkspaceService workspaceService;
-    @Autowired
+    @Mock
     WorkspaceRepository workspaceRepository;
-    @Autowired
+    @Mock
     MemberRepository memberRepository;
 
     private Member member;
@@ -43,108 +44,284 @@ public class WorkspaceServiceTest {
     @Before
     public void setUp() {
         member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+        ReflectionTestUtils.setField(member, "id", 1L);
     }
 
     @Test
-    public void saveWorkspace_Basic_Success() {
+    public void saveWorkspace_ValidInput_Success() {
         // given
-        memberRepository.save(member);
+        WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), "test-workspace-name");
 
+        // mocking
+        when(memberRepository.findById(rq.getUserId())).thenReturn(Optional.of(member));
+        when(workspaceRepository.save(any(Workspace.class))).thenReturn(any());
+        
+        // when
+        Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
+
+        // then
+        verify(memberRepository).findById(rq.getUserId());
+        verify(memberRepository, times(1)).findById(rq.getUserId());
+
+        verify(workspaceRepository).save(any(Workspace.class));
+        verify(workspaceRepository, times(1)).save(any(Workspace.class));
+    }
+
+    @Test(expected = CustomException.class)
+    public void saveWorkspace_NotExistedMember_ThrowCustomException() {
+        // given
+        WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), "test-workspace-name");
+
+        // mocking
+        when(memberRepository.findById(rq.getUserId())).thenReturn(Optional.empty());
+
+        // when
+        Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
+
+        // then
+        fail("회원 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test
+    public void addParticipants_ValidInput_Success() {
+        // given
+        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+
+        final Long workspaceId = 1L;
+        List<Long> accountIds = Arrays.asList(new Long[]{new Long(1)});
+        AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
+
+        // mocking
+        when(workspaceRepository.findById(rq.getWorkspaceId())).thenReturn(Optional.of(workspace));
+        when(memberRepository.findAllById(rq.getAccountIds())).thenReturn(anyList());
+
+        // when
+        workspaceService.addParticipants(rq);
+
+        // then
+        verify(workspaceRepository).findById(rq.getWorkspaceId());
+        verify(workspaceRepository, times(1)).findById(rq.getWorkspaceId());
+
+        verify(memberRepository).findAllById(rq.getAccountIds());
+        verify(memberRepository, times(1)).findAllById(rq.getAccountIds());
+    }
+
+    @Test(expected = CustomException.class)
+    public void addParticipants_NotExistedWorkspace_Success() {
+        // given
+        final Long workspaceId = 1L;
+        List<Long> accountIds = Arrays.asList();
+        AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
+
+        // mocking
+        when(workspaceRepository.findById(rq.getWorkspaceId())).thenReturn(Optional.empty());
+
+        // when
+        workspaceService.addParticipants(rq);
+
+        // then
+        fail("작업 공간 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test
+    public void findById_ValidInput_Success() {
+        // given
         final String testWorkspaceName = "test-workspace-name";
-        WorkspaceSaveRequestDto requestDto = WorkspaceSaveRequestDto.create(member.getId(), testWorkspaceName);
+        Workspace workspace = Workspace.create(testWorkspaceName, Participant.create(member));
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
 
         // when
-        Long workspaceId = workspaceService.saveWorkspace(requestDto);
-        Workspace result = workspaceRepository.findById(workspaceId).get();
-
-        // then
-        assertThat(workspaceId).isGreaterThanOrEqualTo(0L);
-        assertThat(result.getName()).isEqualTo(testWorkspaceName);
-    }
-
-    @Test
-    public void addParticipants_Basic_Success() {
-        // given
-        memberRepository.save(member);
-
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace", participant);
-        workspaceRepository.save(workspace);
-
-        List<Long> memberIds = new ArrayList<>();
-        for(int i=0;i<20;i++) {
-            Member saveMember = Member.create("test-id" + i, "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
-            memberRepository.save(saveMember);
-            memberIds.add(saveMember.getId());
-        }
-
-        // when
-        workspaceService.addParticipants(AddParticipantsRequestDto.create(workspace.getId(), memberIds));
-
-        Workspace result = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspace.getId());
-        List<Participant> participants = result.getParticipantGroup().getParticipants();
-
-        // then
-         assertThat(participants.size()).isEqualTo(21); // 처음에 만든 사람 1 + 참가자 20
-    }
-
-    @Test
-    public void findById_Basic_Success() {
-        // given
-        memberRepository.save(member);
-
-        final String testWorkspaceName = "test-workspace-name";
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create(testWorkspaceName, participant);
-        workspaceRepository.save(workspace);
-
-        // when
-        WorkspaceResponseDto result = workspaceService.findById(workspace.getId());
+        WorkspaceResponseDto result = workspaceService.findById(workspaceId);
 
         // then
         assertThat(result.getName()).isEqualTo(testWorkspaceName);
+
+        verify(workspaceRepository).findById(workspaceId);
+        verify(workspaceRepository, times(1)).findById(workspaceId);
+    }
+
+    @Test(expected = CustomException.class)
+    public void findById_NotExistedWorkspace_ThrowCustomException() {
+        // given
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.empty());
+
+        // when
+        WorkspaceResponseDto result = workspaceService.findById(workspaceId);
+
+        // then
+        fail("작업 공간 조회시 예외가 발생해야 합니다.");
     }
 
     @Test
-    public void deleteParticipantByMemberId_GivenExistedMember_True() {
+    public void findAllByMemberId_ValidInput_Success() {
         // given
-        memberRepository.save(member);
+        final Long memberId = 1L;
 
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace-name", participant);
-        workspaceRepository.save(workspace);
+        // mocking
+        when(memberRepository.existsById(memberId)).thenReturn(true);
+        when(workspaceRepository.findAllByMemberId(memberId)).thenReturn(anyList());
 
         // when
-        workspaceService.deleteParticipantByMemberId(member.getId(), workspace.getId());
-        Workspace result = workspaceRepository.findById(workspace.getId()).get();
+        List<WorkspaceResponseDto> result = workspaceService.findAllByMemberId(memberId);
 
         // then
-        assertThat(result.getParticipantGroup().getSize()).isEqualTo(0);
+        verify(memberRepository).existsById(memberId);
+        verify(memberRepository, times(1)).existsById(memberId);
+
+        verify(workspaceRepository).findAllByMemberId(memberId);
+        verify(workspaceRepository, times(1)).findAllByMemberId(memberId);
+
+
+    }
+
+    @Test(expected = CustomException.class)
+    public void findAllByMemberId_NotExistedMember_ThrowCustomException() {
+        // given
+        final Long memberId = 1L;
+
+        // mocking
+        when(memberRepository.existsById(memberId)).thenReturn(false);
+
+        // when
+        List<WorkspaceResponseDto> result = workspaceService.findAllByMemberId(memberId);
+
+        // then
+        fail("회원 조회시 예외가 발생해야 합니다.");
     }
 
     @Test
-    public void findMembersById_MembersExist_Success() {
+    public void findMembersById_ValidInput_Success() {
         // given
-        memberRepository.save(member);
+        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
 
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace-name", participant);
+        final Long workspaceId = 1L;
 
-        List<Member> members = new ArrayList<>();
-        for(int i=0;i<20;i++) {
-            Member saveMember = Member.create("test-id" + i, "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
-            memberRepository.save(saveMember);
-            members.add(saveMember);
-        }
-
-        workspace.addParticipants(members);
-        workspaceRepository.save(workspace);
+        // mocking
+        when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
 
         // when
-        List<MemberResponseDto> results = workspaceService.findMembersById(workspace.getId());
+        List<MemberResponseDto> result = workspaceService.findMembersById(workspaceId);
 
         // then
-        assertThat(results.size()).isEqualTo(21);
+        assertThat(result.get(0).getAccountId()).isEqualTo(member.getAccountId());
+
+        verify(workspaceRepository).existsById(workspaceId);
+        verify(workspaceRepository, times(1)).existsById(workspaceId);
+
+        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+    }
+
+    @Test(expected = CustomException.class)
+    public void findMembersById_NotExistedWorkspace_ThrowCustomException() {
+        // given
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.existsById(workspaceId)).thenReturn(false);
+
+        // when
+        List<MemberResponseDto> result = workspaceService.findMembersById(workspaceId);
+
+        // then
+        fail("작업 공간 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test
+    public void deleteById_ValidInput_Success() {
+        // given
+        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
+        doNothing().when(workspaceRepository).delete(any(Workspace.class));
+
+        // when
+        workspaceService.deleteById(workspaceId);
+
+        // then
+        verify(workspaceRepository).findById(workspaceId);
+        verify(workspaceRepository, times(1)).findById(workspaceId);
+
+        verify(workspaceRepository).delete(any(Workspace.class));
+        verify(workspaceRepository, times(1)).delete(any(Workspace.class));
+    }
+
+    @Test(expected = CustomException.class)
+    public void deleteById_NotExistedWorkspace_ThrowCustomException() {
+        // given
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.empty());
+
+        // when
+        workspaceService.deleteById(workspaceId);
+
+        // then
+        fail("작업 공간 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test
+    public void deleteParticipantByMemberId_ValidInput_Success() {
+        // given
+        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+
+        final Long memberId = 1L;
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+
+        // when
+        workspaceService.deleteParticipantByMemberId(memberId, workspaceId);
+
+        // then
+        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+    }
+
+    @Test(expected = CustomException.class)
+    public void deleteParticipantByMemberId_NotExistedWorkspace_ThrowCustomException() {
+        // given
+        final Long memberId = 1L;
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(null);
+
+        // when
+        workspaceService.deleteParticipantByMemberId(memberId, workspaceId);
+
+        // then
+        fail("작업 공간 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test(expected = CustomException.class)
+    public void deleteParticipantByMemberId_NotExistedParticipant_ThrowCustomException() {
+        // given
+        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+        workspace.getParticipantGroup().removeParticipant(member.getId());
+
+        final Long memberId = 1L;
+        final Long workspaceId = 1L;
+
+        // mocking
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+
+        // when
+        workspaceService.deleteParticipantByMemberId(memberId, workspaceId);
+
+        // then
+        fail("입력 받은 회원이 작업 공간에 참가된 회원인지 확인시 예외가 발생해야 합니다.");
     }
 
 }

@@ -16,9 +16,9 @@ public abstract class BaseEntity extends BaseTimeEntity {
 
     @CreatedBy
     @Column(name = "created_account_id", updatable = false)
-    private String createdAccountId; // 유저의 계정 id가 아닌 고유 식별자 id
+    private String createdAccountId; // 유저의 계정 아이디
 
     @LastModifiedBy
     @Column(name = "last_modified_account_id")
-    private String lastModifiedAccountId; // 유저의 계정 id가 아닌 고유 식별자 id
+    private String lastModifiedAccountId; // 유저의 계정 패스워드
 }

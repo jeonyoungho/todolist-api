@@ -44,6 +44,7 @@ public class Member extends BaseTimeEntity implements Serializable {
         this.authority = authority;
     }
 
+    //== 생성 메서드 ==//
     public static Member create(String accountId, String accountPw, String name, String city, String street, String zipcode, Authority authority) {
         Address address = Address.create(city, street, zipcode);
         return create(accountId, accountPw, name, address, authority);

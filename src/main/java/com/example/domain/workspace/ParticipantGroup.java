@@ -23,6 +23,7 @@ public class ParticipantGroup {
     @OneToMany(mappedBy = "workspace", cascade = ALL, orphanRemoval = true)
     private List<Participant> participants = new ArrayList<>();
 
+    //== 연관관계 메서드 ==//
     public void addParticipant(Participant participant) {
         participants.add(participant);
     }

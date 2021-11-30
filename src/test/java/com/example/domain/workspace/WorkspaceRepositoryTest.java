@@ -1,5 +1,6 @@
 package com.example.domain.workspace;
 
+import com.example.domain.TestQuerydslConfig;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
@@ -7,18 +8,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@Import(TestQuerydslConfig.class)
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
+@DataJpaTest
 public class WorkspaceRepositoryTest {
 
     @Autowired
@@ -34,7 +35,7 @@ public class WorkspaceRepositoryTest {
     }
 
     @Test
-    public void findAllByMemberId_Basic_Success() {
+    public void findAllByMemberId_ValidInput_Success() {
         // given
         memberRepository.save(member);
 
@@ -51,9 +52,32 @@ public class WorkspaceRepositoryTest {
         assertThat(workspaces.size()).isEqualTo(10);
     }
 
+    @Test
+    public void findAllByMemberId_NotExistedWorkspaces_IsEmpty() {
+        // given
+        memberRepository.save(member);
+
+        // when
+        List<Workspace> workspaces = workspaceRepository.findAllByMemberId(null);
+
+        // then
+        assertThat(workspaces.size()).isEqualTo(0);
+    }
 
     @Test
-    public void findByIdWithFetchJoinParticipantMember_Basic_Success() {
+    public void findAllByMemberId_WorkspaceIdIsNull_IsEmpty() {
+        // given
+        memberRepository.save(member);
+
+        // when
+        List<Workspace> workspaces = workspaceRepository.findAllByMemberId(null);
+
+        // then
+        assertThat(workspaces.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void findByIdWithFetchJoinParticipantMember_ValidInput_Success() {
         // given
         memberRepository.save(member);
 

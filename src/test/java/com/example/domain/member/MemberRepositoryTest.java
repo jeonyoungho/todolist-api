@@ -1,21 +1,21 @@
 package com.example.domain.member;
 
+import com.example.domain.TestQuerydslConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+@Import(TestQuerydslConfig.class)
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
+@DataJpaTest
 public class MemberRepositoryTest {
 
     @Autowired
@@ -29,7 +29,7 @@ public class MemberRepositoryTest {
     }
 
     @Test
-    public void save_GivenValidInput_Success() {
+    public void save_ValidInput_Success() {
         // given
         Member saveMember = memberRepository.save(member);
 
@@ -41,7 +41,7 @@ public class MemberRepositoryTest {
     }
 
     @Test
-    public void findById_GivenInValidInput_Fail() {
+    public void findById_NotExistedMemberId_False() {
         // given
         memberRepository.save(member);
 
@@ -50,6 +50,54 @@ public class MemberRepositoryTest {
 
         // then
         assertThat(result.isPresent()).isFalse();
+    }
+
+    @Test
+    public void findByAccountId_ValidInput_True() {
+        // given
+        memberRepository.save(member);
+
+        // when
+        Optional<Member> result = memberRepository.findByAccountId(member.getAccountId());
+
+        // then
+        assertThat(result.isPresent()).isTrue();
+    }
+
+    @Test
+    public void findByAccountId_NotExistedAccountId_False() {
+        // given
+        memberRepository.save(member);
+
+        // when
+        Optional<Member> result = memberRepository.findByAccountId("fake-id");
+
+        // then
+        assertThat(result.isPresent()).isFalse();
+    }
+
+    @Test
+    public void existsByAccountId_ExistedAccountId_True() {
+        // given
+        memberRepository.save(member);
+
+        // when
+        boolean result = memberRepository.existsByAccountId(member.getAccountId());
+
+        // then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void existsByAccountId_NotExistedAccountId_False() {
+        // given
+        memberRepository.save(member);
+
+        // when
+        boolean result = memberRepository.existsByAccountId("fake-id");
+
+        // then
+        assertThat(result).isFalse();
     }
 
 }

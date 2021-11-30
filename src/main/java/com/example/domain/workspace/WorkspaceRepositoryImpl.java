@@ -1,5 +1,6 @@
 package com.example.domain.workspace;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +20,7 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .select(workspace).distinct()
                 .from(workspace)
                 .leftJoin(workspace.participantGroup.participants, participant).fetchJoin()
-                .where(participant.member.id.eq(memberId))
+                .where(participantMemberIdEq(memberId))
                 .fetch();
     }
 
@@ -30,8 +31,15 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .from(workspace)
                 .leftJoin(workspace.participantGroup.participants, participant).fetchJoin()
                 .leftJoin(participant.member, member).fetchJoin()
-                .where(workspace.id.eq(workspaceId))
+                .where(workspaceIdEq(workspaceId))
                 .fetchOne();
     }
 
+    private BooleanExpression participantMemberIdEq(Long memberId) {
+        return memberId != null ? participant.member.id.eq(memberId) : null;
+    }
+
+    private BooleanExpression workspaceIdEq(Long workspaceId) {
+        return workspaceId != null ? workspace.id.eq(workspaceId) : null;
+    }
 }

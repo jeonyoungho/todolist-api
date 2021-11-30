@@ -2,37 +2,25 @@ package com.example.domain.workspace;
 
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
-import com.example.domain.member.MemberRepository;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
 public class ParticipantGroupTest {
-
-    @Autowired
-    MemberRepository memberRepository;
 
     private Member member;
 
     @Before
     public void setUp() {
         member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+        ReflectionTestUtils.setField(member, "id", 1L);
     }
 
     @Test
-    public void isExistByMemberId_GivenExistedMemberId_True() throws Exception {
+    public void isExistByMemberId_GivenExistedMemberId_True() {
         // given
-        memberRepository.save(member);
-
         ParticipantGroup participantGroup = createParticipantGroup(member);
 
         // when
@@ -43,14 +31,12 @@ public class ParticipantGroupTest {
     }
 
     @Test
-    public void isExistByMemberId_GivenNotExistedMemberId_False() throws Exception {
+    public void isExistByMemberId_GivenNotExistedMemberId_False() {
         // given
-        memberRepository.save(member);
-
         ParticipantGroup participantGroup = createParticipantGroup(member);
 
         // when
-        Boolean expected = participantGroup.isExistByMemberId(1000L);
+        Boolean expected = participantGroup.isExistByMemberId(555L);
 
         // then
         assertThat(expected).isFalse();
