@@ -11,12 +11,12 @@ import com.example.domain.workspace.ParticipantGroup;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import com.example.exception.CustomException;
+import com.example.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.exception.ErrorCode.*;
@@ -30,8 +30,10 @@ public class WorkspaceService {
 
     @Transactional
     public Long saveWorkspace(WorkspaceSaveRequestDto rq) {
-        Member member = memberRepository.findById(rq.getUserId())
+        Member member = memberRepository.findById(rq.getMemberId())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        SecurityUtil.checkAuthority(member.getAccountId());
 
         Participant participant = Participant.create(member);
 
@@ -43,8 +45,9 @@ public class WorkspaceService {
 
     @Transactional
     public void addParticipants(AddParticipantsRequestDto rq) {
-        Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
-                .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
+        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId());
+
+        validateWorkspaceAuthority(workspace);
 
         List<Member> members = memberRepository.findAllById(rq.getAccountIds());
 
@@ -86,26 +89,30 @@ public class WorkspaceService {
 
     @Transactional
     public void deleteById(Long workspaceId) {
-        Optional<Workspace> workspace = workspaceRepository.findById(workspaceId);
-        if (!workspace.isPresent()) {
-            throw new CustomException(WORKSPACE_NOT_FOUND);
-        }
+        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
 
-        workspaceRepository.delete(workspace.get());
+        validateWorkspaceAuthority(workspace);
+
+        workspaceRepository.delete(workspace);
     }
 
     @Transactional
     public void deleteParticipantByMemberId(Long memberId, Long workspaceId) {
         Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+
+        validateWorkspaceAuthority(workspace);
+
+        workspace.getParticipantGroup().removeParticipant(memberId);
+    }
+
+    private void validateWorkspaceAuthority(Workspace workspace) {
         if (workspace == null) {
             throw new CustomException(WORKSPACE_NOT_FOUND);
         }
 
         ParticipantGroup participantGroup = workspace.getParticipantGroup();
-        if (!participantGroup.isExistByMemberId(memberId)) {
-            throw new CustomException(PARTICIPANT_NOT_FOUND);
+        if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
+            throw new CustomException(UNAUTHORIZED_MEMBER);
         }
-
-        participantGroup.removeParticipant(memberId);
     }
 }

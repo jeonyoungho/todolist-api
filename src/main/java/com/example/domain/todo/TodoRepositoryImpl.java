@@ -21,26 +21,38 @@ import static com.example.domain.todo.QTodoWorkspace.todoWorkspace;
 public class TodoRepositoryImpl implements TodoRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-    
+
     @Override
-    public Todo findByIdFetchJoinChilds(Long todoId) {
+    public Todo findByIdFetchJoinMember(Long todoId) {
+        return queryFactory
+                .select(todo)
+                .from(todo)
+                .leftJoin(todo.member, member).fetchJoin()
+                .where(todoIdEq(todoId))
+                .fetchOne();
+    }
+
+    @Override
+    public Todo findByIdFetchJoinMemberAndChilds(Long todoId) {
         QTodo subTodo = new QTodo("subTodo");
 
         return queryFactory
-                .select(todo).distinct()
+                .select(todo)
                 .from(todo)
+                .leftJoin(todo.member, member).fetchJoin()
                 .leftJoin(todo.childs, subTodo).fetchJoin()
                 .where(todoIdEq(todoId))
                 .fetchOne();
     }
 
     @Override
-    public Todo findByIdFetchJoinTodoWorkspaceGroupAndChilds(Long todoId) {
+    public Todo findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(Long todoId) {
         QTodo subTodo = new QTodo("subTodo");
 
         return queryFactory
-                .select(todo).distinct()
+                .select(todo)
                 .from(todo)
+                .leftJoin(todo.member, member).fetchJoin()
                 .leftJoin(todo.todoWorkspaceGroup.todoWorkspaces, todoWorkspace).fetchJoin()
                 .leftJoin(todo.childs, subTodo).fetchJoin()
                 .where(todoIdEq(todoId))

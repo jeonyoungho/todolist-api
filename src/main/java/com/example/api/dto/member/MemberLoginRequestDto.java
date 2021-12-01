@@ -1,7 +1,6 @@
 package com.example.api.dto.member;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
@@ -17,10 +16,13 @@ public class MemberLoginRequestDto {
     @NotBlank
     private String accountPw;
 
-    @Builder
     public MemberLoginRequestDto(String accountId, String accountPw) {
         this.accountId = accountId;
         this.accountPw = accountPw;
+    }
+
+    public static MemberLoginRequestDto create(String accountId, String accountPw) {
+        return new MemberLoginRequestDto(accountId, accountPw);
     }
 
     public UsernamePasswordAuthenticationToken toAuthentication() {

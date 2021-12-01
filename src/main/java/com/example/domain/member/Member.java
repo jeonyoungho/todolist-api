@@ -59,4 +59,5 @@ public class Member extends BaseTimeEntity implements Serializable {
                 .authority(authority)
                 .build();
     }
+
 }

@@ -5,7 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface TodoRepositoryCustom {
-    Todo findByIdFetchJoinChilds(Long todoId);
-    Todo findByIdFetchJoinTodoWorkspaceGroupAndChilds(Long todoId);
+    Todo findByIdFetchJoinMember(Long todoId);
+    Todo findByIdFetchJoinMemberAndChilds(Long todoId);
+    Todo findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(Long todoId);
     Page<BasicTodoResponseDto> findAllBasicTodos(Pageable pageable, Long workspaceId, TodoStatus todoStatus);
 }

@@ -13,21 +13,21 @@ import javax.validation.constraints.NotNull;
 public class WorkspaceSaveRequestDto {
     @Schema(description = "회원 고유 식별자", required = true)
     @NotNull
-    private Long userId;
+    private Long memberId;
 
     @Schema(description = "작업 공간 이름", required = true)
     @NotBlank
     private String name;
 
     @Builder
-    public WorkspaceSaveRequestDto(Long userId, String name) {
-        this.userId = userId;
+    public WorkspaceSaveRequestDto(Long memberId, String name) {
+        this.memberId = memberId;
         this.name = name;
     }
 
-    public static WorkspaceSaveRequestDto create(Long userId, String name) {
+    public static WorkspaceSaveRequestDto create(Long memberId, String name) {
         return WorkspaceSaveRequestDto.builder()
-                .userId(userId)
+                .memberId(memberId)
                 .name(name)
                 .build();
     }

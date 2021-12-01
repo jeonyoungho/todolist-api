@@ -38,7 +38,6 @@ public class MemberService {
         }
 
         Member savedMember = memberRepository.save(rq.toEntity(passwordEncoder));
-
         return savedMember.getId();
     }
 

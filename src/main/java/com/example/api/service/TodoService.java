@@ -34,11 +34,9 @@ public class TodoService {
         Member member = memberRepository.findById(rq.getMemberId())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        Todo parentTodo = null;
-        Long parentId = rq.getParentId();
-        if (parentId != null) {
-            parentTodo = getParentTodo(parentId);
-        }
+        SecurityUtil.checkAuthority(member.getAccountId());
+
+        Todo parentTodo = getParentTodo(rq.getParentId());
 
         Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
                 .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
@@ -52,6 +50,10 @@ public class TodoService {
     }
 
     private Todo getParentTodo(Long parentId) {
+        if (parentId == null) {
+            return null;
+        }
+
         Optional optional = todoRepository.findById(parentId);
         if (!optional.isPresent()) {
             throw new CustomException(TODO_NOT_FOUND);
@@ -73,7 +75,6 @@ public class TodoService {
 
         Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
         ParticipantGroup participantGroup = workspace.getParticipantGroup();
-
         if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
             throw new CustomException(UNAUTHORIZED_MEMBER);
         }
@@ -83,41 +84,45 @@ public class TodoService {
 
 
     @Transactional
-    public void changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) throws Throwable {
+    public void changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) {
         TodoStatus status = rq.getStatus();
         if (TodoStatus.COMPLETED.equals(status)) {
             changeCompleteStatus(todoId, status);
             return;
         }
 
-        Todo todo = (Todo) todoRepository.findById(todoId)
-                .orElseThrow(() -> new CustomException(TODO_NOT_FOUND));
+        Todo todo = todoRepository.findByIdFetchJoinMember(todoId);
+
+        SecurityUtil.checkAuthority(todo.getMember().getAccountId());
 
         todo.changeStatus(status);
     }
 
     private void changeCompleteStatus(Long todoId, TodoStatus status) {
-        Todo todo = todoRepository.findByIdFetchJoinChilds(todoId);
+        Todo todo = todoRepository.findByIdFetchJoinMemberAndChilds(todoId);
         if(!todo.isAllChildsCompleted()) {
             throw new CustomException(ALL_CHILD_TODO_NOT_COMPLETED);
         }
+
+        SecurityUtil.checkAuthority(todo.getMember().getAccountId());
 
         todo.changeStatus(status);
     }
 
     @Transactional
-    public void delete(Long todoId) { // TODO: 쿼리 최적화?
+    public void delete(Long todoId) {
         if (!todoRepository.existsById(todoId)) {
             throw new CustomException(TODO_NOT_FOUND);
         }
 
-        Todo todo = todoRepository.findByIdFetchJoinTodoWorkspaceGroupAndChilds(todoId);
+        Todo todo = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId);
+
+        SecurityUtil.checkAuthority(todo.getMember().getAccountId());
+
         if(todo.childsSize() > 0) {
             todo.clearChilds();
         }
 
         todoRepository.deleteById(todoId);
     }
-
-
 }

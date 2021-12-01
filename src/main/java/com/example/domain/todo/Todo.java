@@ -2,6 +2,8 @@ package com.example.domain.todo;
 
 import com.example.domain.BaseEntity;
 import com.example.domain.member.Member;
+import com.example.exception.CustomException;
+import com.example.exception.ErrorCode;
 import lombok.*;
 
 import javax.persistence.*;

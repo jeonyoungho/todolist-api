@@ -54,5 +54,4 @@ public class Workspace extends BaseEntity {
             addParticipant(participant);
         }
     }
-
 }

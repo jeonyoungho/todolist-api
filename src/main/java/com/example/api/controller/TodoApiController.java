@@ -3,9 +3,9 @@ package com.example.api.controller;
 import com.example.api.dto.todo.TodoStatusUpdateRequestDto;
 import com.example.api.dto.todo.basic.BasicTodoResponseDto;
 import com.example.api.dto.todo.basic.BasicTodoSaveRequestDto;
+import com.example.api.service.TodoService;
 import com.example.domain.todo.TodoStatus;
 import com.example.exception.ErrorDetails;
-import com.example.api.service.TodoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-@Tag(name = "Todo", description = "Todo) API")
+@Tag(name = "Todo", description = "Todo API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "${api.version}")

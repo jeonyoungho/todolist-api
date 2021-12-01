@@ -17,11 +17,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -45,6 +49,10 @@ public class WorkspaceServiceTest {
     public void setUp() {
         member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
         ReflectionTestUtils.setField(member, "id", 1L);
+
+        Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(member.getAuthority().getValue()));
+        UserDetails principal = new User(member.getAccountId(), "", authorities);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(principal, "", authorities));
     }
 
     @Test
@@ -53,15 +61,15 @@ public class WorkspaceServiceTest {
         WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), "test-workspace-name");
 
         // mocking
-        when(memberRepository.findById(rq.getUserId())).thenReturn(Optional.of(member));
+        when(memberRepository.findById(rq.getMemberId())).thenReturn(Optional.of(member));
         when(workspaceRepository.save(any(Workspace.class))).thenReturn(any());
         
         // when
         Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
 
         // then
-        verify(memberRepository).findById(rq.getUserId());
-        verify(memberRepository, times(1)).findById(rq.getUserId());
+        verify(memberRepository).findById(rq.getMemberId());
+        verify(memberRepository, times(1)).findById(rq.getMemberId());
 
         verify(workspaceRepository).save(any(Workspace.class));
         verify(workspaceRepository, times(1)).save(any(Workspace.class));
@@ -73,13 +81,30 @@ public class WorkspaceServiceTest {
         WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), "test-workspace-name");
 
         // mocking
-        when(memberRepository.findById(rq.getUserId())).thenReturn(Optional.empty());
+        when(memberRepository.findById(rq.getMemberId())).thenReturn(Optional.empty());
 
         // when
         Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
 
         // then
         fail("회원 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test(expected = CustomException.class)
+    public void saveWorkspace_UnauthorizedMember_ThrowCustomException() {
+        // given
+        SecurityContextHolder.clearContext();
+
+        WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), "test-workspace-name");
+
+        // mocking
+        when(memberRepository.findById(rq.getMemberId())).thenReturn(Optional.of(member));
+
+        // when
+        Long savedWorkspaceId = workspaceService.saveWorkspace(rq);
+
+        // then
+        fail("작업 공간 등록 권한 체크시 예외가 발생해야 합니다.");
     }
 
     @Test
@@ -92,15 +117,15 @@ public class WorkspaceServiceTest {
         AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
 
         // mocking
-        when(workspaceRepository.findById(rq.getWorkspaceId())).thenReturn(Optional.of(workspace));
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(workspace);
         when(memberRepository.findAllById(rq.getAccountIds())).thenReturn(anyList());
 
         // when
         workspaceService.addParticipants(rq);
 
         // then
-        verify(workspaceRepository).findById(rq.getWorkspaceId());
-        verify(workspaceRepository, times(1)).findById(rq.getWorkspaceId());
+        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId());
+        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId());
 
         verify(memberRepository).findAllById(rq.getAccountIds());
         verify(memberRepository, times(1)).findAllById(rq.getAccountIds());
@@ -114,13 +139,34 @@ public class WorkspaceServiceTest {
         AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
 
         // mocking
-        when(workspaceRepository.findById(rq.getWorkspaceId())).thenReturn(Optional.empty());
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(null);
 
         // when
         workspaceService.addParticipants(rq);
 
         // then
         fail("작업 공간 조회시 예외가 발생해야 합니다.");
+    }
+
+    @Test(expected = CustomException.class)
+    public void addParticipants_UnauthorizedMember_ThrowCustomException() {
+        // given
+        SecurityContextHolder.clearContext();
+
+        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+
+        final Long workspaceId = 1L;
+        List<Long> accountIds = Arrays.asList(new Long[]{new Long(555)});
+        AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
+
+        // mocking
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(workspace);
+
+        // when
+        workspaceService.addParticipants(rq);
+
+        // then
+        fail("참가자 등록 권한 체크시 예외가 발생해야 합니다.");
     }
 
     @Test
@@ -241,15 +287,15 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
         doNothing().when(workspaceRepository).delete(any(Workspace.class));
 
         // when
         workspaceService.deleteById(workspaceId);
 
         // then
-        verify(workspaceRepository).findById(workspaceId);
-        verify(workspaceRepository, times(1)).findById(workspaceId);
+        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
 
         verify(workspaceRepository).delete(any(Workspace.class));
         verify(workspaceRepository, times(1)).delete(any(Workspace.class));
@@ -261,7 +307,7 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.empty());
+        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(null);
 
         // when
         workspaceService.deleteById(workspaceId);

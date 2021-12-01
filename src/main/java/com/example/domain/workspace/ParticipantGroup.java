@@ -54,5 +54,4 @@ public class ParticipantGroup {
         return participants.stream()
                 .anyMatch(p -> accountId.equals(p.getMember().getAccountId()));
     }
-
 }

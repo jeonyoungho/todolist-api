@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 
-import static com.example.exception.ErrorCode.NOT_FOUND_AUTHENTICATION_INFO;
+import static com.example.exception.ErrorCode.*;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SecurityUtil {
@@ -20,5 +20,23 @@ public class SecurityUtil {
         }
 
         return authentication.getName();
+    }
+
+    public static void checkAuthority(String accountId) {
+        if (accountId == null) {
+            throw new CustomException(MEMBER_NOT_FOUND);
+        }
+
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if(authentication == null || !StringUtils.hasText(authentication.getName())) {
+            throw new CustomException(NOT_FOUND_AUTHENTICATION_INFO);
+        }
+
+        if (!authentication.getName().equals(accountId)) {
+            throw new CustomException(UNAUTHORIZED_MEMBER);
+        }
+
+        System.out.println("authentication.getName(): " + authentication.getName());
     }
 }

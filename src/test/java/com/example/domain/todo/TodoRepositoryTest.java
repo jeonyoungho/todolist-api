@@ -81,6 +81,28 @@ public class TodoRepositoryTest {
     }
 
     @Test
+    public void findByIdFetchJoinMember_ValidInput_Success() {
+        // given
+        memberRepository.save(member);
+
+        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        workspaceRepository.save(workspace);
+
+        final String content = "parent-todo-test-content";
+        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), content, null, 10);
+        todoRepository.save(parentTodo);
+
+        // when
+        Todo result = todoRepository.findByIdFetchJoinMember(parentTodo.getId());
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEqualTo(content);
+        assertThat(result.getMember()).isNotNull();
+        assertThat(result.getMember().getAccountId()).isEqualTo("test-id");
+    }
+
+    @Test
     public void findByIdFetchJoinChilds_ValidInput_Success() {
         // given
         memberRepository.save(member);
@@ -102,7 +124,7 @@ public class TodoRepositoryTest {
         em.clear();
 
         // when
-        Todo result = todoRepository.findByIdFetchJoinChilds(parentTodo.getId());
+        Todo result = todoRepository.findByIdFetchJoinMemberAndChilds(parentTodo.getId());
 
         // then
         assertThat(result.getChilds().size()).isEqualTo(2);
@@ -131,7 +153,7 @@ public class TodoRepositoryTest {
         em.clear();
 
         // when
-        Todo result = todoRepository.findByIdFetchJoinTodoWorkspaceGroupAndChilds(parentTodo.getId());
+        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(parentTodo.getId());
 
         // then
         assertThat(result).isNotNull();
@@ -144,7 +166,7 @@ public class TodoRepositoryTest {
         // given
 
         // when
-        Todo result = todoRepository.findByIdFetchJoinTodoWorkspaceGroupAndChilds(33L);
+        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(33L);
 
         // then
         assertThat(result).isNull();
@@ -170,7 +192,7 @@ public class TodoRepositoryTest {
         todoRepository.save(childTodo2);
 
         // when
-        Todo result = todoRepository.findByIdFetchJoinTodoWorkspaceGroupAndChilds(null);
+        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(null);
 
         // then
         fail("해당 메소드의 결과는 단건이 아니기에 예외가 발생해야 합니다.");
