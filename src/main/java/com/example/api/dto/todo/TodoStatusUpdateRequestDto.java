@@ -4,11 +4,13 @@ import com.example.domain.todo.TodoStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 
 @Schema(description = "Todo 상태 변경 요청 DTO")
 @Getter
+@NoArgsConstructor
 public class TodoStatusUpdateRequestDto {
     @Schema(description = "변경 할 Todo 상태명", required = true, allowableValues = {"UNCOMPLETED", "COMPLETED"})
     @NotNull

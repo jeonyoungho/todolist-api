@@ -2,11 +2,13 @@ package com.example.api.dto.member;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
+@NoArgsConstructor
 public class MemberLoginRequestDto {
     @Schema(description = "회원 계정 아이디", maxLength = 20, required = true)
     @NotBlank

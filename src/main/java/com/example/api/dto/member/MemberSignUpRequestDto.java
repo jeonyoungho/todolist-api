@@ -6,11 +6,13 @@ import com.example.domain.member.Member;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
+@NoArgsConstructor
 public class MemberSignUpRequestDto {
     @Schema(description = "회원 계정 아이디", maxLength = 20, required = true)
     @NotBlank

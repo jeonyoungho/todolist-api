@@ -5,8 +5,8 @@ import com.example.api.dto.jwt.TokenDto;
 import com.example.api.dto.member.MemberListResponseDto;
 import com.example.api.dto.member.MemberLoginRequestDto;
 import com.example.api.dto.member.MemberSignUpRequestDto;
-import com.example.exception.ErrorDetails;
 import com.example.api.service.MemberService;
+import com.example.exception.ErrorDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @Tag(name = "Member", description = "회원 API")
@@ -49,7 +48,7 @@ public class MemberApiController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근", content = @Content(schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping("/member/login")
-    public ResponseEntity<TokenDto> login(@Valid @RequestBody MemberLoginRequestDto rq, HttpServletResponse response) {
+    public ResponseEntity<TokenDto> login(@Valid @RequestBody MemberLoginRequestDto rq) {
         final TokenDto tokenDto = memberService.login(rq);
         return ResponseEntity.ok(tokenDto);
     }

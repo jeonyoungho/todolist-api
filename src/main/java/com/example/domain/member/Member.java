@@ -13,7 +13,7 @@ public class Member extends BaseTimeEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "member_id")
     private Long id;
 
     @Column(name = "account_id", length = 20, nullable = false, unique = true)

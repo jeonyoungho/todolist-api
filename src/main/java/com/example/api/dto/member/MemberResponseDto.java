@@ -14,10 +14,7 @@ public class MemberResponseDto {
 
     @Schema(description = "회원 계정 아이디", maxLength = 20, required = true)
     private String accountId;
-
-    @Schema(description = "회원 계정 패스워드", maxLength = 20, required = true)
-    private String accountPw;
-
+    
     @Schema(description = "회원 이름", maxLength = 20, required = true)
     private String name;
 
@@ -33,7 +30,6 @@ public class MemberResponseDto {
     public MemberResponseDto(Member entity) {
         this.id = entity.getId();
         this.accountId = entity.getAccountId();
-        this.accountPw = entity.getAccountPw();
         this.name = entity.getName();
         this.city = entity.getAddress().getCity();
         this.street = entity.getAddress().getCity();

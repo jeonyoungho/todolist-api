@@ -1,12 +1,13 @@
 package com.example.api.dto.jwt;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
+@NoArgsConstructor
 public class ReissueRequestDto {
     @Schema(description = "Access 토큰", required = true)
     @NotBlank
@@ -16,8 +17,6 @@ public class ReissueRequestDto {
     @NotBlank
     private String refreshToken;
 
-
-    @Builder
     public ReissueRequestDto(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
