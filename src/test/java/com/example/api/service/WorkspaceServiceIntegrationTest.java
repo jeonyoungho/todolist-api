@@ -94,7 +94,7 @@ public class WorkspaceServiceIntegrationTest {
         // when
         workspaceService.addParticipants(AddParticipantsRequestDto.create(workspace.getId(), memberIds));
 
-        Workspace result = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspace.getId());
+        Workspace result = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspace.getId());
         List<Participant> participants = result.getParticipantGroup().getParticipants();
 
         // then

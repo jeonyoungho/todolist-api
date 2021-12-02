@@ -25,6 +25,10 @@ public class RefreshTokenService {
         return values.get(accountId);
     }
 
+    public Boolean hasKey(String accountId) {
+        return redisTemplate.hasKey(accountId);
+    }
+
     public void delValue(String accountId) {
         redisTemplate.delete(accountId);
     }

@@ -15,7 +15,7 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-    public List<Workspace> findAllByMemberId(Long memberId) {
+    public List<Workspace> findAllByMemberIdFetchJoinParticipant(Long memberId) {
         return queryFactory
                 .select(workspace).distinct()
                 .from(workspace)
@@ -25,12 +25,14 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
     }
 
     @Override
-    public Workspace findByIdWithFetchJoinParticipantAndMember(Long workspaceId) {
+    public Workspace findByIdFetchJoinParticipantAndMember(Long workspaceId) {
         return queryFactory
                 .select(workspace).distinct()
                 .from(workspace)
-                .leftJoin(workspace.participantGroup.participants, participant).fetchJoin()
-                .leftJoin(participant.member, member).fetchJoin()
+                .leftJoin(workspace.participantGroup.participants, participant)
+                .fetchJoin()
+                .leftJoin(participant.member, member)
+                .fetchJoin()
                 .where(workspaceIdEq(workspaceId))
                 .fetchOne();
     }

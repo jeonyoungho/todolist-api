@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
 import javax.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import static javax.persistence.CascadeType.ALL;
 
@@ -17,7 +17,7 @@ import static javax.persistence.CascadeType.ALL;
 public class TodoWorkspaceGroup {
 
     @OneToMany(mappedBy = "todo", cascade = ALL, orphanRemoval = true)
-    private List<TodoWorkspace> todoWorkspaces = new ArrayList<>();
+    private Set<TodoWorkspace> todoWorkspaces = new LinkedHashSet<>();
 
     //== 연관관계 메서드 ==//
     public void addTodoWorkspace(TodoWorkspace todoWorkspace) {

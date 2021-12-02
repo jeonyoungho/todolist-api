@@ -31,9 +31,8 @@ public class InitDB {
     @PostConstruct
     public void init() {
         initService.dbInit0(); // account id string
-        initService.dbInit1(1, "workspace1"); // workspace1 -> member1~10 (총 10명) -> member1 상위 todo 1개 하위 todo 1개 작성
-        initService.dbInit1(11, "workspace2"); // workspace2 -> member11~20 (총 10명) -> member2 상위 todo 1개 하위 todo 1개 작성
-
+        initService.dbInit1(0, "workspace1"); // workspace1 -> member1~10 (총 10명) -> member1 상위 todo 1개 하위 todo 1개 작성
+        initService.dbInit1(10, "workspace2"); // workspace2 -> member11~20 (총 10명) -> member2 상위 todo 1개 하위 todo 1개 작성
     }
 
     @Component
@@ -44,22 +43,19 @@ public class InitDB {
         private final WorkspaceRepository workspaceRepository;
         private final TodoRepository todoRepository;
         private final BCryptPasswordEncoder passwordEncoder;
+        private Member member;
 
         public void dbInit0() {
-            memberRepository.save(Member.create("string", passwordEncoder.encode("string"), "string", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER));
+            member = Member.create("string", passwordEncoder.encode("string"), "string", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+            memberRepository.save(member);
         }
 
         public void dbInit1(int idx, String workspaceName) {
-            Member member1 = Member.create("member" + idx, passwordEncoder.encode("string"), "member" + idx, "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
-            memberRepository.save(member1);
-
-            Workspace workspace = Workspace.create(workspaceName, Participant.create(member1));
+            Workspace workspace = Workspace.create(workspaceName, Participant.create(member));
 
             List<Member> members = new ArrayList<>();
-            int index = idx + 1;
-            int size = idx + 10;
-            for(int i=index;i<size;i++) {
-                Member saveMember = Member.create("test-id" + i, passwordEncoder.encode("test-pw" + i), "member" + i, "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+            for(int i=idx+1; i<=idx+10; i++) {
+                Member saveMember = Member.create("member" + i, passwordEncoder.encode("string"), "member" + i, "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
                 memberRepository.save(saveMember);
                 members.add(saveMember);
             }
@@ -68,11 +64,11 @@ public class InitDB {
             workspaceRepository.save(workspace);
 
 
-            Todo parentTodo = BasicTodo.createBasicTodo(member1, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
+            Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
             todoRepository.save(parentTodo);
 
             for (int i=0; i<10; i++) {
-                Todo childTodo = BasicTodo.createBasicTodo(member1, TodoWorkspace.create(workspace), "child-todo-test-content" + i, parentTodo, 20);
+                Todo childTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content" + i, parentTodo, 20);
                 todoRepository.save(childTodo);
             }
 
@@ -81,7 +77,7 @@ public class InitDB {
         private Member createMember() {
             return Member.builder()
                     .accountId("test-id")
-                    .accountPw(passwordEncoder.encode("test-pw"))
+                    .accountPw(passwordEncoder.encode("string"))
                     .name("test-user")
                     .address(Address.builder()
                             .street("test-street")

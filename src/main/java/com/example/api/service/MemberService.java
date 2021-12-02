@@ -61,6 +61,10 @@ public class MemberService {
 
     @Transactional
     public void logout(String accountId) {
+        if (!refreshTokenService.hasKey(accountId)) {
+            throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
+        }
+
         refreshTokenService.delValue(accountId);
     }
 

@@ -45,7 +45,7 @@ public class WorkspaceService {
 
     @Transactional
     public void addParticipants(AddParticipantsRequestDto rq) {
-        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId());
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId());
 
         validateWorkspaceAuthority(workspace);
 
@@ -68,7 +68,7 @@ public class WorkspaceService {
             throw new CustomException(MEMBER_NOT_FOUND);
         }
 
-        return workspaceRepository.findAllByMemberId(memberId).stream()
+        return workspaceRepository.findAllByMemberIdFetchJoinParticipant(memberId).stream()
                 .map(WorkspaceResponseDto::new)
                 .collect(Collectors.toList());
     }
@@ -79,7 +79,7 @@ public class WorkspaceService {
             throw new CustomException(WORKSPACE_NOT_FOUND);
         }
 
-        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
         List<Participant> participants = workspace.getParticipantGroup().getParticipants();
         return participants.stream()
                 .map(p -> p.getMember())
@@ -89,7 +89,7 @@ public class WorkspaceService {
 
     @Transactional
     public void deleteById(Long workspaceId) {
-        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
 
         validateWorkspaceAuthority(workspace);
 
@@ -98,7 +98,7 @@ public class WorkspaceService {
 
     @Transactional
     public void deleteParticipantByMemberId(Long memberId, Long workspaceId) {
-        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
 
         validateWorkspaceAuthority(workspace);
 

@@ -56,11 +56,15 @@ public class MemberApiController {
     @Operation(summary = "로그아웃", description = "계정 아이디를 파라미터로 받아 로그아웃을 합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 리소스 접근"),
     })
     @PostMapping("/member/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody String accountId) {
         memberService.logout(accountId);
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 
     @Operation(summary = "Refresh 토큰 재발급", description = "Access 토큰과 Refresh 토큰을 파라미터로 받아 새로운 토큰을 재발급합니다.")

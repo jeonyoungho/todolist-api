@@ -242,7 +242,7 @@ public class TodoServiceTest {
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
         when(todoRepository.findAllBasicTodos(pageable, workspaceId, status)).thenReturn(any(Page.class));
 
         // when
@@ -252,8 +252,8 @@ public class TodoServiceTest {
         verify(workspaceRepository).existsById(workspaceId);
         verify(workspaceRepository, times(1)).existsById(workspaceId);
 
-        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
-        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository).findByIdFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdFetchJoinParticipantAndMember(workspaceId);
 
         verify(todoRepository).findAllBasicTodos(pageable, workspaceId, status);
         verify(todoRepository, times(1)).findAllBasicTodos(pageable, workspaceId, status);
@@ -290,7 +290,7 @@ public class TodoServiceTest {
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
 
         // when
         Page<BasicTodoResponseDto> result = todoService.findAllBasicTodos(pageable, workspaceId, status);

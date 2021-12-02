@@ -99,25 +99,42 @@ public class MemberServiceTest {
        final String accountId = "test-id";
 
        // mocking
+       when(refreshTokenService.hasKey(anyString())).thenReturn(true);
        doNothing().when(refreshTokenService).delValue(anyString());
 
        // when
        memberService.logout(accountId);
 
        // then
+       verify(refreshTokenService).hasKey(anyString());
+       verify(refreshTokenService, times(1)).hasKey(anyString());
+
        verify(refreshTokenService).delValue(anyString());
        verify(refreshTokenService, times(1)).delValue(anyString());
+
    }
+
+    @Test(expected = CustomException.class)
+    public void logout_NotExistedKeyInRefreshTokenStore_ThrowCustomException() {
+        // given
+        final String accountId = "test-id";
+
+        // mocking
+        when(refreshTokenService.hasKey(anyString())).thenReturn(false);
+
+        // when
+        memberService.logout(accountId);
+
+        // then
+        fail("리프레시 토큰 저장소로부터 계정 아이디 확인시 예외가 발생해야 합니다.");
+    }
 
    @Test
    public void reissue_ValidInput_Success() {
        // given
        final String accessToken = "access-token";
        final String refreshToken = "refresh-token";
-       ReissueRequestDto rq = ReissueRequestDto.builder()
-               .accessToken(accessToken)
-               .refreshToken(refreshToken)
-               .build();
+       ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
 
        // mocking
        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
@@ -157,10 +174,7 @@ public class MemberServiceTest {
         // given
         final String accessToken = "access-token";
         final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
 
         // mocking
         when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(false);
@@ -177,10 +191,7 @@ public class MemberServiceTest {
         // given
         final String accessToken = "access-token";
         final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
 
         // mocking
         when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
@@ -203,10 +214,7 @@ public class MemberServiceTest {
         // given
         final String accessToken = "access-token";
         final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
 
         // mocking
         when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
@@ -229,10 +237,7 @@ public class MemberServiceTest {
         // given
         final String accessToken = "access-token";
         final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
 
         // mocking
         when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);

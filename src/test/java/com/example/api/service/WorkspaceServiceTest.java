@@ -117,15 +117,15 @@ public class WorkspaceServiceTest {
         AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(workspace);
         when(memberRepository.findAllById(rq.getAccountIds())).thenReturn(anyList());
 
         // when
         workspaceService.addParticipants(rq);
 
         // then
-        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId());
-        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId());
+        verify(workspaceRepository).findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId());
+        verify(workspaceRepository, times(1)).findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId());
 
         verify(memberRepository).findAllById(rq.getAccountIds());
         verify(memberRepository, times(1)).findAllById(rq.getAccountIds());
@@ -139,7 +139,7 @@ public class WorkspaceServiceTest {
         AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(null);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(null);
 
         // when
         workspaceService.addParticipants(rq);
@@ -160,7 +160,7 @@ public class WorkspaceServiceTest {
         AddParticipantsRequestDto rq = AddParticipantsRequestDto.create(workspaceId, accountIds);
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId())).thenReturn(workspace);
 
         // when
         workspaceService.addParticipants(rq);
@@ -211,7 +211,7 @@ public class WorkspaceServiceTest {
 
         // mocking
         when(memberRepository.existsById(memberId)).thenReturn(true);
-        when(workspaceRepository.findAllByMemberId(memberId)).thenReturn(anyList());
+        when(workspaceRepository.findAllByMemberIdFetchJoinParticipant(memberId)).thenReturn(anyList());
 
         // when
         List<WorkspaceResponseDto> result = workspaceService.findAllByMemberId(memberId);
@@ -220,8 +220,8 @@ public class WorkspaceServiceTest {
         verify(memberRepository).existsById(memberId);
         verify(memberRepository, times(1)).existsById(memberId);
 
-        verify(workspaceRepository).findAllByMemberId(memberId);
-        verify(workspaceRepository, times(1)).findAllByMemberId(memberId);
+        verify(workspaceRepository).findAllByMemberIdFetchJoinParticipant(memberId);
+        verify(workspaceRepository, times(1)).findAllByMemberIdFetchJoinParticipant(memberId);
 
 
     }
@@ -250,7 +250,7 @@ public class WorkspaceServiceTest {
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
 
         // when
         List<MemberResponseDto> result = workspaceService.findMembersById(workspaceId);
@@ -261,8 +261,8 @@ public class WorkspaceServiceTest {
         verify(workspaceRepository).existsById(workspaceId);
         verify(workspaceRepository, times(1)).existsById(workspaceId);
 
-        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
-        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository).findByIdFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdFetchJoinParticipantAndMember(workspaceId);
     }
 
     @Test(expected = CustomException.class)
@@ -287,15 +287,15 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
         doNothing().when(workspaceRepository).delete(any(Workspace.class));
 
         // when
         workspaceService.deleteById(workspaceId);
 
         // then
-        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
-        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository).findByIdFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdFetchJoinParticipantAndMember(workspaceId);
 
         verify(workspaceRepository).delete(any(Workspace.class));
         verify(workspaceRepository, times(1)).delete(any(Workspace.class));
@@ -307,7 +307,7 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(null);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(null);
 
         // when
         workspaceService.deleteById(workspaceId);
@@ -325,14 +325,14 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
 
         // when
         workspaceService.deleteParticipantByMemberId(memberId, workspaceId);
 
         // then
-        verify(workspaceRepository).findByIdWithFetchJoinParticipantAndMember(workspaceId);
-        verify(workspaceRepository, times(1)).findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository).findByIdFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository, times(1)).findByIdFetchJoinParticipantAndMember(workspaceId);
     }
 
     @Test(expected = CustomException.class)
@@ -342,7 +342,7 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(null);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(null);
 
         // when
         workspaceService.deleteParticipantByMemberId(memberId, workspaceId);
@@ -361,7 +361,7 @@ public class WorkspaceServiceTest {
         final Long workspaceId = 1L;
 
         // mocking
-        when(workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
 
         // when
         workspaceService.deleteParticipantByMemberId(memberId, workspaceId);

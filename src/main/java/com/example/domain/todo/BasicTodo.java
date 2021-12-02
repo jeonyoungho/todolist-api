@@ -5,12 +5,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Getter
+@DynamicUpdate
 @DiscriminatorValue(TodoConstants.BASIC_TODO_TYPE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity

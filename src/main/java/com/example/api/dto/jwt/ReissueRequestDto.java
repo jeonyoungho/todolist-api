@@ -21,4 +21,8 @@ public class ReissueRequestDto {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
+
+    public static ReissueRequestDto create(String accessToken, String refreshToken) {
+        return new ReissueRequestDto(accessToken, refreshToken);
+    }
 }

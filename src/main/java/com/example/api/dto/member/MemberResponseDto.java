@@ -14,7 +14,7 @@ public class MemberResponseDto {
 
     @Schema(description = "회원 계정 아이디", maxLength = 20, required = true)
     private String accountId;
-    
+
     @Schema(description = "회원 이름", maxLength = 20, required = true)
     private String name;
 

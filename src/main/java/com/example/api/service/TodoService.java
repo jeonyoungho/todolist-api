@@ -73,7 +73,7 @@ public class TodoService {
             throw new CustomException(WORKSPACE_NOT_FOUND);
         }
 
-        Workspace workspace = workspaceRepository.findByIdWithFetchJoinParticipantAndMember(workspaceId);
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
         ParticipantGroup participantGroup = workspace.getParticipantGroup();
         if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
             throw new CustomException(UNAUTHORIZED_MEMBER);
