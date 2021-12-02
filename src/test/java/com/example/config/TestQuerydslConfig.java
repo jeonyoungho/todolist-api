@@ -1,4 +1,4 @@
-package com.example.domain;
+package com.example.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.boot.test.context.TestConfiguration;

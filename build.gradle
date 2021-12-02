@@ -29,6 +29,7 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.mariadb.jdbc:mariadb-java-client'
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
@@ -56,6 +57,12 @@ dependencies {
 	}
 	testImplementation 'org.springframework.security:spring-security-test'
 
+}
+
+configurations {
+	all {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
 }
 
 test {

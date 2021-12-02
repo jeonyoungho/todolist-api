@@ -1,6 +1,6 @@
 package com.example.domain.workspace;
 
-import com.example.domain.TestQuerydslConfig;
+import com.example.config.TestQuerydslConfig;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;

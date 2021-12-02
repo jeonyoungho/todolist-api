@@ -1,3 +1,6 @@
+api:
+  version: /api/v1
+
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -16,6 +19,11 @@ spring:
         default_batch_fetch_size: 100
         batch_fetch_style: dynamic
     open-in-view: true # false
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
 
 server:
   error:
@@ -36,14 +44,6 @@ jwt:
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
   access_token_expire_time: 5 # minute
   refresh_token_expire_time: 30 # minute
-
-api:
-  version: /api/v1
-
-logging:
-  level:
-    org.hibernate.SQL: debug
-#    org.hibernate.type: trace
 
 springdoc:
   version: '0.0.1'

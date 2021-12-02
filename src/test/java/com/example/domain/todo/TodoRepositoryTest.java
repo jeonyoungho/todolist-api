@@ -1,7 +1,8 @@
 package com.example.domain.todo;
 
 import com.example.api.dto.todo.basic.BasicTodoResponseDto;
-import com.example.domain.TestQuerydslConfig;
+import com.example.config.CustomDataJpaTest;
+import com.example.config.TestQuerydslConfig;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
@@ -12,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 @Import(TestQuerydslConfig.class)
 @RunWith(SpringRunner.class)
-@DataJpaTest
+@CustomDataJpaTest
 public class TodoRepositoryTest {
 
     @Autowired
