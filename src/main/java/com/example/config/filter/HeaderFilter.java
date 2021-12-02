@@ -16,7 +16,7 @@ public class HeaderFilter implements Filter {
        res.setHeader("Access-Control-Allow-Headers",
                "X-Requested-With, Content-Type, Authorization, X-XSRF-token"
        );
-       res.setHeader("Access-Control-Allow-Credentials", "false"); // 브라우저에서 자격 증명을 허용하지 않음 (ex. cookie, 다른 Origin으로부터 쿠키를 허용하도록 지정하려면 true로 바꿔줘야함)
+       res.setHeader("Access-Control-Allow-Credentials", "true"); // 브라우저에서 자격 증명을 허용 여부 (ex. cookie, 다른 Origin으로부터 쿠키를 허용하도록 지정하려면 true로 바꿔줘야함)
 
        chain.doFilter(request, response);
     }

@@ -46,19 +46,6 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     }
 
     @Override
-    public List<Todo> fetchJoinTest(Long todoId) {
-        QTodo subTodo = new QTodo("subTodo");
-
-        return queryFactory
-                .select(todo).distinct()
-                .from(todo)
-                .leftJoin(todo.member, member).fetchJoin()
-                .leftJoin(todo.childs, subTodo).fetchJoin()
-                .where(todoIdEq(todoId))
-                .fetch();
-    }
-
-    @Override
     public Todo findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(Long todoId) {
         QTodo subTodo = new QTodo("subTodo");
 

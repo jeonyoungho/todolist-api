@@ -36,7 +36,5 @@ public class SecurityUtil {
         if (!authentication.getName().equals(accountId)) {
             throw new CustomException(UNAUTHORIZED_MEMBER);
         }
-
-        System.out.println("authentication.getName(): " + authentication.getName());
     }
 }

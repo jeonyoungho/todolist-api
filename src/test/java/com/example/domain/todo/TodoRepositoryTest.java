@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -167,23 +166,6 @@ public class TodoRepositoryTest {
         // when
         Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(parentTodo.getId());
 
-        /*Set<TodoWorkspace> todoWorkspaces = result.getTodoWorkspaceGroup().getTodoWorkspaces();
-        System.out.println("=====");
-        System.out.println("todoWorkspaces.size() = " + todoWorkspaces.size());
-        System.out.println("=====");
-        for (TodoWorkspace todoWorkspace : todoWorkspaces) {
-            System.out.println("todoWorkspace.getId() = " + todoWorkspace.getId());
-//            System.out.println(todoWorkspace.getWorkspace().getName());
-        }
-
-        Set<Todo> childs = result.getChilds();
-        System.out.println("=====");
-        System.out.println("childs.size() = " + childs.size());
-        System.out.println("=====");
-        for (Todo child : childs) {
-            System.out.println("child.getId() = " + child.getId());
-        }*/
-
         // then
         assertThat(result).isNotNull();
         assertThat(result.getTodoWorkspaceGroup().getTodoWorkspaces().size()).isEqualTo(2);
@@ -250,11 +232,6 @@ public class TodoRepositoryTest {
         final int size = 5;
         Pageable pageable = PageRequest.of(page, size);
         Page<BasicTodoResponseDto> result = todoRepository.findAllBasicTodos(pageable, workspace.getId(), TodoStatus.UNCOMPLETED);
-
-        List<BasicTodoResponseDto> content = result.getContent();
-        for (BasicTodoResponseDto basicTodoResponseDto : content) {
-            System.out.println(basicTodoResponseDto);
-        }
 
         // then
         assertThat(result.getTotalElements()).isEqualTo(11); // 부모 Todo 1 + 자식 Todo 10
