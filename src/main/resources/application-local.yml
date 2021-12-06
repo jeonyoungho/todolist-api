@@ -18,7 +18,7 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
         batch_fetch_style: dynamic
-    open-in-view: true # false
+    open-in-view: false # true
 
 decorator:
   datasource:

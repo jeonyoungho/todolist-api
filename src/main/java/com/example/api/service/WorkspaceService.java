@@ -23,6 +23,7 @@ import static com.example.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
@@ -33,7 +34,7 @@ public class WorkspaceService {
         Member member = memberRepository.findById(rq.getMemberId())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        SecurityUtil.checkAuthority(member.getAccountId());
+        SecurityUtil.checkValidRequest(member.getAccountId());
 
         Participant participant = Participant.create(member);
 
@@ -54,7 +55,6 @@ public class WorkspaceService {
         workspace.addParticipants(members);
     }
 
-    @Transactional(readOnly = true)
     public WorkspaceResponseDto findById(Long workspaceId) {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
@@ -62,7 +62,6 @@ public class WorkspaceService {
         return new WorkspaceResponseDto(workspace);
     }
 
-    @Transactional(readOnly = true)
     public List<WorkspaceResponseDto> findAllByMemberId(Long memberId) {
         if (!memberRepository.existsById(memberId)) {
             throw new CustomException(MEMBER_NOT_FOUND);
@@ -73,7 +72,6 @@ public class WorkspaceService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<MemberResponseDto> findMembersById(Long workspaceId) {
         if (!workspaceRepository.existsById(workspaceId)) {
             throw new CustomException(WORKSPACE_NOT_FOUND);
@@ -114,5 +112,6 @@ public class WorkspaceService {
         if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
             throw new CustomException(UNAUTHORIZED_MEMBER);
         }
+
     }
 }

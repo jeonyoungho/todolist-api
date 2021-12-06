@@ -22,6 +22,7 @@ import static com.example.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -105,7 +106,6 @@ public class MemberService {
         }
     }
 
-    @Transactional(readOnly = true)
     public MemberListResponseDto findAll() {
         return MemberListResponseDto.builder()
                 .memberList(memberRepository.findAll())

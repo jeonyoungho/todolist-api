@@ -56,7 +56,7 @@ public class TodoRepositoryTest {
 
         final String content = "todo-test-content";
         final int expectedTime = 10;
-        Todo todo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), content, null, expectedTime);
+        Todo todo = BasicTodo.createBasicTodo(member, workspace, content, null, expectedTime);
         todoRepository.save(todo);
 
         // when
@@ -89,7 +89,7 @@ public class TodoRepositoryTest {
         workspaceRepository.save(workspace);
 
         final String content = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), content, null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, content, null, 10);
         todoRepository.save(parentTodo);
 
         // when
@@ -111,13 +111,13 @@ public class TodoRepositoryTest {
         workspaceRepository.save(workspace);
 
         final String parentTodoContent = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), parentTodoContent, null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, parentTodoContent, null, 10);
         todoRepository.save(parentTodo);
 
-        Todo childTodo1 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child1-todo-test-content", parentTodo, 20);
+        Todo childTodo1 = BasicTodo.createBasicTodo(member, workspace, "child1-todo-test-content", parentTodo, 20);
         todoRepository.save(childTodo1);
 
-        Todo childTodo2 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child2-todo-test-content", parentTodo, 20);
+        Todo childTodo2 = BasicTodo.createBasicTodo(member, workspace, "child2-todo-test-content", parentTodo, 20);
         todoRepository.save(childTodo2);
 
         em.flush();
@@ -146,18 +146,18 @@ public class TodoRepositoryTest {
         workspaceRepository.save(workspace2);
 
         final String parentTodoContent = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), parentTodoContent, null, 1);
-        parentTodo.addTodoWorkspace(TodoWorkspace.create(workspace2));
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, parentTodoContent, null, 1);
+        parentTodo.addTodoWorkspace(workspace2);
         todoRepository.save(parentTodo);
 
 
-        Todo childTodo1 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child1-todo-test-content", parentTodo, 10);
+        Todo childTodo1 = BasicTodo.createBasicTodo(member, workspace, "child1-todo-test-content", parentTodo, 10);
         todoRepository.save(childTodo1);
 
-        Todo childTodo2 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child2-todo-test-content", parentTodo, 20);
+        Todo childTodo2 = BasicTodo.createBasicTodo(member, workspace, "child2-todo-test-content", parentTodo, 20);
         todoRepository.save(childTodo2);
 
-        Todo childTodo3 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child3-todo-test-content", parentTodo, 30);
+        Todo childTodo3 = BasicTodo.createBasicTodo(member, workspace, "child3-todo-test-content", parentTodo, 30);
         todoRepository.save(childTodo3);
 
         em.flush();
@@ -192,13 +192,13 @@ public class TodoRepositoryTest {
         workspaceRepository.save(workspace);
 
         final String parentTodoContent = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), parentTodoContent, null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, parentTodoContent, null, 10);
         todoRepository.save(parentTodo);
 
-        Todo childTodo1 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child1-todo-test-content", parentTodo, 10);
+        Todo childTodo1 = BasicTodo.createBasicTodo(member, workspace, "child1-todo-test-content", parentTodo, 10);
         todoRepository.save(childTodo1);
 
-        Todo childTodo2 = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child2-todo-test-content", parentTodo, 10);
+        Todo childTodo2 = BasicTodo.createBasicTodo(member, workspace, "child2-todo-test-content", parentTodo, 10);
         todoRepository.save(childTodo2);
 
         em.flush();
@@ -219,11 +219,11 @@ public class TodoRepositoryTest {
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
         workspaceRepository.save(workspace);
 
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
         todoRepository.save(parentTodo);
 
         for (int i=0; i<10; i++) {
-            Todo childTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content" + i, parentTodo, 20);
+            Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content" + i, parentTodo, 20);
             todoRepository.save(childTodo);
         }
 

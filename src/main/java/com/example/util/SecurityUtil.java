@@ -22,7 +22,7 @@ public class SecurityUtil {
         return authentication.getName();
     }
 
-    public static void checkAuthority(String accountId) {
+    public static void checkValidRequest(String accountId) {
         if (accountId == null) {
             throw new CustomException(MEMBER_NOT_FOUND);
         }

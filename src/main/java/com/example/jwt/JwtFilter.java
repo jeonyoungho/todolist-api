@@ -42,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && token.startsWith(BEARER_PREFIX)) {
             return token.substring(7);
         }
-        return null;
+        return "";
     }
 
 }

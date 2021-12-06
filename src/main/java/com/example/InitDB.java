@@ -7,7 +7,6 @@ import com.example.domain.member.MemberRepository;
 import com.example.domain.todo.BasicTodo;
 import com.example.domain.todo.Todo;
 import com.example.domain.todo.TodoRepository;
-import com.example.domain.todo.TodoWorkspace;
 import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
@@ -64,11 +63,11 @@ public class InitDB {
             workspaceRepository.save(workspace);
 
 
-            Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
+            Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
             todoRepository.save(parentTodo);
 
             for (int i=0; i<10; i++) {
-                Todo childTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content" + i, parentTodo, 20);
+                Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content" + i, parentTodo, 20);
                 todoRepository.save(childTodo);
             }
 

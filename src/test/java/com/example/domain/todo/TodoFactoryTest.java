@@ -25,15 +25,13 @@ public class TodoFactoryTest {
         Participant participant = Participant.create(member);
         Workspace workspace = Workspace.create("test-workspace", participant);
 
-        TodoWorkspace todoWorkspace = TodoWorkspace.create(workspace);
-
-        Todo parent = BasicTodo.createBasicTodo(member, todoWorkspace, "test2", null, 10);
+        Todo parent = BasicTodo.createBasicTodo(member, workspace, "test2", null, 10);
 
         // when
         final String content = "test-content";
         final int expectedTime = 20;
         BasicTodoSaveRequestDto requestDto = BasicTodoSaveRequestDto.create(member.getId(), workspace.getId(), content, parent.getId(), expectedTime);
-        BasicTodo result = (BasicTodo) TodoFactory.createTodo(member, todoWorkspace, parent, requestDto);
+        BasicTodo result = (BasicTodo) TodoFactory.createTodo(member, workspace, parent, requestDto);
 
         // then
         assertThat(result).isNotNull();

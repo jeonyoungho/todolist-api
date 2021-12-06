@@ -1,6 +1,7 @@
 package com.example.domain.todo;
 
 import com.example.domain.member.Member;
+import com.example.domain.workspace.Workspace;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,16 +22,16 @@ public class BasicTodo extends Todo {
     private int expectedTime;
 
     @Builder
-    public BasicTodo(Member member, TodoWorkspace todoWorkspace, String content, Todo parent, TodoStatus status, int expectedTime) {
-        super(member, todoWorkspace, content, parent, status);
+    public BasicTodo(Member member, Workspace workspace, String content, Todo parent, TodoStatus status, int expectedTime) {
+        super(member, workspace, content, parent, status);
         this.expectedTime = expectedTime;
     }
 
     //== 생성 메서드 ==//
-    public static BasicTodo createBasicTodo(Member member, TodoWorkspace todoWorkspace, String content, Todo parent, int expectedTime) {
+    public static BasicTodo createBasicTodo(Member member, Workspace workspace, String content, Todo parent, int expectedTime) {
         return BasicTodo.builder()
                 .member(member)
-                .todoWorkspace(todoWorkspace)
+                .workspace(workspace)
                 .content(content)
                 .parent(parent)
                 .status(TodoStatus.UNCOMPLETED)

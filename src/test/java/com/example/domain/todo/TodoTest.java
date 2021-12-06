@@ -23,8 +23,8 @@ public class TodoTest {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
 
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
-        Todo childTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content", parentTodo, 20);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
+        Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20);
 
         // when & then
         assertThat(parentTodo.hasParent()).isFalse();

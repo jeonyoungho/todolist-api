@@ -65,10 +65,10 @@ public class TodoServiceTest {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
 
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
         ReflectionTestUtils.setField(parentTodo, "id", anyLong());
 
-        Todo childTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content", parentTodo, 20);
+        Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20);
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
                 .memberId(member.getId())
@@ -123,7 +123,7 @@ public class TodoServiceTest {
     public void saveBasicTodo_ParentTodoIsNull_Success() {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "todo-test-content", null, 10);
+        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
                 .memberId(member.getId())
@@ -190,8 +190,8 @@ public class TodoServiceTest {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
 
-        Todo grandParentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "grand-parent-todo-test-content", null, 10);
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", grandParentTodo, 20);
+        Todo grandParentTodo = BasicTodo.createBasicTodo(member, workspace, "grand-parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", grandParentTodo, 20);
         ReflectionTestUtils.setField(parentTodo, "id", anyLong());
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
@@ -303,7 +303,7 @@ public class TodoServiceTest {
     public void changeStatus_ValidInputWithUncompletedStatus_Success() throws Throwable {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "todo-test-content", null, 10);
+        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
 
         final Long todoId = 1L;
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
@@ -327,7 +327,7 @@ public class TodoServiceTest {
         SecurityContextHolder.clearContext();
 
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "todo-test-content", null, 10);
+        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
 
         final Long todoId = 1L;
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
@@ -366,7 +366,7 @@ public class TodoServiceTest {
     public void changeStatus_ValidInputWithCompletedStatus_Success() {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "todo-test-content", null, 10);
+        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
 
         final Long todoId = 1L;
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
@@ -388,8 +388,8 @@ public class TodoServiceTest {
     public void changeStatus_IsAllChildNotCompletedWithCompletedStatus_ThrowCustomException() throws Throwable {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
-        Set<BasicTodo> childs = Collections.singleton(BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content", parentTodo, 20));
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
+        Set<BasicTodo> childs = Collections.singleton(BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20));
         ReflectionTestUtils.setField(parentTodo, "childs", childs);
 
         final Long todoId = 1L;
@@ -413,7 +413,7 @@ public class TodoServiceTest {
         SecurityContextHolder.clearContext();
 
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "todo-test-content", null, 10);
+        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
 
         final Long todoId = 1L;
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
@@ -434,9 +434,9 @@ public class TodoServiceTest {
     public void delete_ValidInput_Success() {
         // given
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
 
-        Todo childTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "child-todo-test-content", parentTodo, 20);
+        Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20);
         Set<Todo> childs = new LinkedHashSet<>();
         childs.add(childTodo);
         ReflectionTestUtils.setField(parentTodo, "childs", childs);
@@ -483,7 +483,7 @@ public class TodoServiceTest {
         SecurityContextHolder.clearContext();
 
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo parentTodo = BasicTodo.createBasicTodo(member, TodoWorkspace.create(workspace), "parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
 
         final Long todoId = 1L;
 
