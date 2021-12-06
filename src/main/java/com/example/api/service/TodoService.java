@@ -5,8 +5,10 @@ import com.example.api.dto.todo.basic.BasicTodoResponseDto;
 import com.example.api.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
-import com.example.domain.todo.*;
-import com.example.domain.workspace.ParticipantGroup;
+import com.example.domain.todo.Todo;
+import com.example.domain.todo.TodoFactory;
+import com.example.domain.todo.TodoRepository;
+import com.example.domain.todo.TodoStatus;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import com.example.exception.CustomException;
@@ -71,10 +73,8 @@ public class TodoService {
             throw new CustomException(WORKSPACE_NOT_FOUND);
         }
 
-        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
-        ParticipantGroup participantGroup = workspace.getParticipantGroup();
-        if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
-            throw new CustomException(UNAUTHORIZED_MEMBER);
+        if (workspaceRepository.countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId()) <= 0) {
+            throw new CustomException(INVALID_REQUEST);
         }
 
         return todoRepository.findAllBasicTodos(pageable, workspaceId, status);
@@ -83,9 +83,12 @@ public class TodoService {
 
     @Transactional
     public void changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) {
+        if (!todoRepository.existsById(todoId)) {
+            throw new CustomException(TODO_NOT_FOUND);
+        }
+
         TodoStatus status = rq.getStatus();
         Todo todo;
-
         if (TodoStatus.COMPLETED.isEqualTo(status)) {
             todo = todoRepository.findByIdFetchJoinMemberAndChilds(todoId);
             checkAllChildsCompleted(todo);
@@ -114,9 +117,7 @@ public class TodoService {
 
         SecurityUtil.checkValidRequest(todo.getMember().getAccountId());
 
-        if(todo.childsSize() > 0) {
-            todo.clearChilds();
-        }
+        todo.clearChilds();
 
         todoRepository.deleteById(todoId);
     }

@@ -11,6 +11,7 @@ import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -63,10 +64,12 @@ public class TodoRepositoryTest {
         BasicTodo result= (BasicTodo) todoRepository.findById(todo.getId()).get();
 
         // then
-        assertThat(result.getMember()).isEqualTo(member);
-        assertThat(result.getMember().getAccountId()).isEqualTo(member.getAccountId());
-        assertThat(result.getContent()).isEqualTo(content);
-        assertThat(result.getExpectedTime()).isEqualTo(10);
+        Assertions.assertAll(
+                () -> assertThat(result.getMember()).isEqualTo(member),
+                () -> assertThat(result.getMember().getAccountId()).isEqualTo(member.getAccountId()),
+                () -> assertThat(result.getContent()).isEqualTo(content),
+                () -> assertThat(result.getExpectedTime()).isEqualTo(expectedTime)
+        );
     }
 
     @Test

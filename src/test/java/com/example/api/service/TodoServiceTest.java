@@ -11,6 +11,7 @@ import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import com.example.exception.CustomException;
+import com.example.util.SecurityUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,7 +101,7 @@ public class TodoServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void saveBasicTodo_UnauthorizedMember_ThrowCustomException() {
+    public void saveBasicTodo_InvalidRequestByClient_ThrowCustomException() {
         // given
         SecurityContextHolder.clearContext();
 
@@ -242,7 +243,7 @@ public class TodoServiceTest {
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())).thenReturn(1L);
         when(todoRepository.findAllBasicTodos(pageable, workspaceId, status)).thenReturn(any(Page.class));
 
         // when
@@ -252,8 +253,8 @@ public class TodoServiceTest {
         verify(workspaceRepository).existsById(workspaceId);
         verify(workspaceRepository, times(1)).existsById(workspaceId);
 
-        verify(workspaceRepository).findByIdFetchJoinParticipantAndMember(workspaceId);
-        verify(workspaceRepository, times(1)).findByIdFetchJoinParticipantAndMember(workspaceId);
+        verify(workspaceRepository).countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId());
+        verify(workspaceRepository, times(1)).countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId());
 
         verify(todoRepository).findAllBasicTodos(pageable, workspaceId, status);
         verify(todoRepository, times(1)).findAllBasicTodos(pageable, workspaceId, status);
@@ -277,9 +278,9 @@ public class TodoServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void findAllBasicTodos_UnauthorizedMember_ThrowCustomException() {
+    public void findAllBasicTodos_InvalidRequestByClient_ThrowCustomException() {
         // given
-        SecurityContextHolder.clearContext();
+//        SecurityContextHolder.clearContext();
 
         Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
         workspace.addParticipant(Participant.create(member));
@@ -290,7 +291,7 @@ public class TodoServiceTest {
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)).thenReturn(workspace);
+        when(workspaceRepository.countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())).thenReturn(0L);
 
         // when
         Page<BasicTodoResponseDto> result = todoService.findAllBasicTodos(pageable, workspaceId, status);
@@ -311,18 +312,22 @@ public class TodoServiceTest {
                 .build();
 
         // mocking
+        when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(todo);
 
         // when
         todoService.changeStatus(todoId, rq);
 
         // then
+        verify(todoRepository).existsById(todoId);
+        verify(todoRepository, times(1)).existsById(todoId);
+
         verify(todoRepository).findByIdFetchJoinMember(todoId);
         verify(todoRepository, times(1)).findByIdFetchJoinMember(todoId);
     }
 
     @Test(expected = CustomException.class)
-    public void changeStatus_UnauthorizedMemberWithUncompletedStatus_ThrowCustomException() throws Throwable {
+    public void changeStatus_InvalidRequestByClientWithUncompletedStatus_ThrowCustomException() throws Throwable {
         // given
         SecurityContextHolder.clearContext();
 
@@ -335,6 +340,7 @@ public class TodoServiceTest {
                 .build();
 
         // mocking
+        when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(todo);
 
         // when
@@ -353,6 +359,7 @@ public class TodoServiceTest {
                 .build();
 
         // mocking
+        when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(null);
 
         // when
@@ -374,12 +381,16 @@ public class TodoServiceTest {
                 .build();
 
         // mocking
+        when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(todo);
 
         // when
         todoService.changeStatus(todoId, rq);
 
         // then
+        verify(todoRepository).existsById(todoId);
+        verify(todoRepository, times(1)).existsById(todoId);
+
         verify(todoRepository).findByIdFetchJoinMemberAndChilds(todoId);
         verify(todoRepository, times(1)).findByIdFetchJoinMemberAndChilds(todoId);
     }
@@ -398,6 +409,7 @@ public class TodoServiceTest {
                 .build();
 
         // mocking
+        when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(parentTodo);
 
         // when
@@ -408,7 +420,7 @@ public class TodoServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void changeStatus_UnauthorizedMemberWithCompletedStatus_ThrowCustomException() {
+    public void changeStatus_InvalidRequestByClientWithCompletedStatus_ThrowCustomException() {
         // given
         SecurityContextHolder.clearContext();
 
@@ -421,6 +433,7 @@ public class TodoServiceTest {
                 .build();
 
         // mocking
+        when(todoRepository.existsById(todoId)).thenReturn(true);
         when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(todo);
 
         // when
@@ -478,7 +491,7 @@ public class TodoServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void delete_UnauthorizedMember_ThrowCustomException() {
+    public void delete_InvalidRequestByClient_ThrowCustomException() {
         // given
         SecurityContextHolder.clearContext();
 

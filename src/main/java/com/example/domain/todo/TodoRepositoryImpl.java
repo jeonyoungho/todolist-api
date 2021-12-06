@@ -50,7 +50,7 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
         QTodo subTodo = new QTodo("subTodo");
 
         return queryFactory
-                .select(todo)
+                .select(todo).distinct()
                 .from(todo)
                 .leftJoin(todo.member, member).fetchJoin()
                 .leftJoin(todo.todoWorkspaceGroup.todoWorkspaces, todoWorkspace).fetchJoin()

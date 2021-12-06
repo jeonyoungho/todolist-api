@@ -11,10 +11,10 @@ import java.util.List;
 public class MemberListResponseDto {
 
     @Schema(description = "회원 정보 리스트")
-    private final List<Member> memberList;
+    private final List<Member> members;
 
     @Builder
-    public MemberListResponseDto(List<Member> memberList) {
-        this.memberList = memberList;
+    public MemberListResponseDto(List<Member> members) {
+        this.members = members;
     }
 }

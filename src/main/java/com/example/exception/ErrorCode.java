@@ -13,6 +13,7 @@ import static org.springframework.http.HttpStatus.*;
 public enum ErrorCode {
 
     /* 400 BAD_REQUEST : 잘못된 요청 */
+    INVALID_REQUEST(BAD_REQUEST, "유효하지 않은 요청입니다."),
     INVALID_ACCESS_TOKEN(BAD_REQUEST, "Access 토큰이 유효하지 않습니다."),
     INVALID_REFRESH_TOKEN(BAD_REQUEST, "Refresh 토큰이 유효하지 않습니다."),
     MISMATCH_REFRESH_TOKEN(BAD_REQUEST, "리프레시 토큰의 유저 정보가 일치하지 않습니다."),

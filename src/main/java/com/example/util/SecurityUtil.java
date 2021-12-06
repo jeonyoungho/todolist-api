@@ -34,7 +34,7 @@ public class SecurityUtil {
         }
 
         if (!authentication.getName().equals(accountId)) {
-            throw new CustomException(UNAUTHORIZED_MEMBER);
+            throw new CustomException(INVALID_REQUEST);
         }
     }
 }

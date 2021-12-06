@@ -91,7 +91,7 @@ public class WorkspaceServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void saveWorkspace_UnauthorizedMember_ThrowCustomException() {
+    public void saveWorkspace_InvalidRequestByClient_ThrowCustomException() {
         // given
         SecurityContextHolder.clearContext();
 
@@ -149,7 +149,7 @@ public class WorkspaceServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void addParticipants_UnauthorizedMember_ThrowCustomException() {
+    public void addParticipants_InvalidRequestByClient_ThrowCustomException() {
         // given
         SecurityContextHolder.clearContext();
 

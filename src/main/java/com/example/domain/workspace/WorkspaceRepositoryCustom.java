@@ -5,4 +5,5 @@ import java.util.List;
 public interface WorkspaceRepositoryCustom {
     List<Workspace> findAllByMemberIdFetchJoinParticipant(Long memberId);
     Workspace findByIdFetchJoinParticipantAndMember(Long workspaceId);
+    Long countByIdAndCurrentAccountId(Long workspaceId, String currentAccountId);
 }

@@ -111,7 +111,6 @@ public class MemberServiceTest {
 
        verify(refreshTokenService).delValue(anyString());
        verify(refreshTokenService, times(1)).delValue(anyString());
-
    }
 
     @Test(expected = CustomException.class)
@@ -269,7 +268,7 @@ public class MemberServiceTest {
         // when
         MemberListResponseDto result = memberService.findAll();
 
-        List<Member> resultList = result.getMemberList();
+        List<Member> resultList = result.getMembers();
 
         // then
         assertThat(resultList).isNotNull();

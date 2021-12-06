@@ -85,7 +85,7 @@ public class MemberService {
         String savedRefreshToken = refreshTokenService.getValue(accountId);
 
         // 4. RefreshToken 일치하는지 검사
-        validateSavedRefreshToken(receivedRefreshToken, savedRefreshToken);
+        checkValidRefreshToken(receivedRefreshToken, savedRefreshToken);
 
         // 5. 새로운 토큰 생성
         TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
@@ -96,7 +96,7 @@ public class MemberService {
         return tokenDto;
     }
 
-    private void validateSavedRefreshToken(String receivedRefreshToken, String savedRefreshToken) {
+    private void checkValidRefreshToken(String receivedRefreshToken, String savedRefreshToken) {
         if (!StringUtils.hasText(savedRefreshToken) ) {
             throw new CustomException(REFRESH_TOKEN_NOT_FOUND);
         }
@@ -108,7 +108,7 @@ public class MemberService {
 
     public MemberListResponseDto findAll() {
         return MemberListResponseDto.builder()
-                .memberList(memberRepository.findAll())
+                .members(memberRepository.findAll())
                 .build();
     }
 }

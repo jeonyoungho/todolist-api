@@ -3,6 +3,7 @@ package com.example.domain.workspace;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -35,6 +36,22 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                 .fetchJoin()
                 .where(workspaceIdEq(workspaceId))
                 .fetchOne();
+    }
+
+    @Override
+    public Long countByIdAndCurrentAccountId(Long workspaceId, String currentAccountId) {
+        return queryFactory
+                .selectFrom(workspace)
+                .leftJoin(workspace.participantGroup.participants, participant)
+                .where(
+                        workspaceIdEq(workspaceId),
+                        participantMemberAccountIdEq(currentAccountId)
+                )
+                .fetchCount();
+    }
+
+    private BooleanExpression participantMemberAccountIdEq(String currentAccountId) {
+        return StringUtils.hasText(currentAccountId) ? participant.member.accountId.eq(currentAccountId) : null;
     }
 
     private BooleanExpression participantMemberIdEq(Long memberId) {

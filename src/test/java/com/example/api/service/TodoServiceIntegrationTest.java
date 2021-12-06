@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -32,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class TodoServiceIntegrationTest {
 
+    @Autowired
+    EntityManager em;
     @Autowired
     TodoService todoService;
     @Autowired
@@ -65,5 +68,35 @@ public class TodoServiceIntegrationTest {
         // then
         assertThat(basicTodo.getContent()).isEqualTo(content);
     }
+
+//    @Test
+//    @Rollback(value = false)
+//    public void test() {
+//        // given
+//        Member member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
+//        memberRepository.save(member);
+//
+//        Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(member.getAuthority().getValue()));
+//        UserDetails principal = new User(member.getAccountId(), "", authorities);
+//        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(principal, "", authorities));
+//
+//        Participant participant = Participant.create(member);
+//        Workspace workspace = Workspace.create("test-workspace", participant);
+//        workspaceRepository.save(workspace);
+//
+//        final String content = "todo-test-content";
+//        BasicTodo todo = BasicTodo.createBasicTodo(member, workspace, content, null, 100);
+//        todoRepository.save(todo);
+//
+//        em.flush();
+//        em.clear();
+//
+//        // when
+//        Long result = workspaceRepository.countByIdAndCurrentAccountId(workspace.getId(), member.getAccountId());
+//
+//        System.out.println("result = " + result);
+//
+//        // then
+//    }
 
 }

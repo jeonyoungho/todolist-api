@@ -73,12 +73,14 @@ public abstract class Todo extends BaseEntity {
         return childs.stream().allMatch(t -> TodoStatus.COMPLETED.equals(t.status));
     }
 
-    public void clearChilds() {
-        getChilds().clear();
+    public Boolean hasChilds() {
+        return getChilds().size() > 0;
     }
 
-    public int childsSize() {
-        return getChilds().size();
+    public void clearChilds() {
+        if (hasChilds()) {
+            getChilds().clear();
+        }
     }
 
     public Boolean hasParent() {
