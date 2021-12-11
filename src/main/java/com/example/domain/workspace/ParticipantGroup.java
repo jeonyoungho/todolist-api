@@ -45,11 +45,6 @@ public class ParticipantGroup {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
-    public Boolean isExistByMemberId(Long memberId) {
-        return participants.stream()
-                .anyMatch(p -> memberId.equals(p.getMember().getId()));
-    }
-
     public Boolean isExistByAccountId(String accountId) {
         return participants.stream()
                 .anyMatch(p -> accountId.equals(p.getMember().getAccountId()));

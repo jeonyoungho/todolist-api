@@ -5,8 +5,8 @@ import com.example.api.dto.todo.basic.BasicTodoResponseDto;
 import com.example.api.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
+import com.example.domain.todo.BasicTodo;
 import com.example.domain.todo.Todo;
-import com.example.domain.todo.TodoFactory;
 import com.example.domain.todo.TodoRepository;
 import com.example.domain.todo.TodoStatus;
 import com.example.domain.workspace.Workspace;
@@ -44,7 +44,7 @@ public class TodoService {
         Workspace workspace = workspaceRepository.findById(rq.getWorkspaceId())
                 .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
 
-        Todo todo = TodoFactory.createTodo(member, workspace, parentTodo, rq);
+        Todo todo = BasicTodo.create(member, workspace, rq.getContent(), parentTodo, rq.getExpectedTime());
         todoRepository.save(todo);
 
         return todo.getId();
@@ -61,7 +61,7 @@ public class TodoService {
         }
 
         Todo parentTodo = (Todo) optional.get();
-        if (parentTodo.hasParent()) { // 만약 부모 Todo 가 부모를 가지고 있을 경우 예외 발생
+        if (parentTodo.hasParent()) { // 상위 Todo 하나만을 가질 수 있기에 만약 부모 Todo 가 부모를 가지고 있을 경우 예외 발생
             throw new CustomException(INVALID_PARENT_TODO);
         }
 
@@ -73,7 +73,7 @@ public class TodoService {
             throw new CustomException(WORKSPACE_NOT_FOUND);
         }
 
-        if (workspaceRepository.countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId()) <= 0) {
+        if (!workspaceRepository.existsByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())) {
             throw new CustomException(INVALID_REQUEST);
         }
 
@@ -83,17 +83,16 @@ public class TodoService {
 
     @Transactional
     public void changeStatus(Long todoId, TodoStatusUpdateRequestDto rq) {
-        if (!todoRepository.existsById(todoId)) {
-            throw new CustomException(TODO_NOT_FOUND);
-        }
-
         TodoStatus status = rq.getStatus();
         Todo todo;
         if (TodoStatus.COMPLETED.isEqualTo(status)) {
-            todo = todoRepository.findByIdFetchJoinMemberAndChilds(todoId);
+            todo = todoRepository.findByIdFetchJoinMemberAndChilds(todoId)
+                    .orElseThrow(() -> new CustomException(TODO_NOT_FOUND));
+
             checkAllChildsCompleted(todo);
         } else {
-            todo = todoRepository.findByIdFetchJoinMember(todoId);
+            todo = todoRepository.findByIdFetchJoinMember(todoId)
+                    .orElseThrow(() -> new CustomException(TODO_NOT_FOUND));
         }
 
         SecurityUtil.checkValidRequest(todo.getMember().getAccountId());
@@ -109,11 +108,8 @@ public class TodoService {
 
     @Transactional
     public void delete(Long todoId) {
-        if (!todoRepository.existsById(todoId)) {
-            throw new CustomException(TODO_NOT_FOUND);
-        }
-
-        Todo todo = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId);
+        Todo todo = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId)
+                .orElseThrow(() -> new CustomException(TODO_NOT_FOUND));
 
         SecurityUtil.checkValidRequest(todo.getMember().getAccountId());
 

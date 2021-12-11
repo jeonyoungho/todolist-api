@@ -3,10 +3,12 @@ package com.example.api.dto.todo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+@SuperBuilder
 @Getter
 @NoArgsConstructor
 public abstract class TodoSaveRequestDto {
@@ -26,11 +28,4 @@ public abstract class TodoSaveRequestDto {
     @Schema(description = "상위 Todo 고유 식별자", required = true)
     @NotNull
     private Long parentId;
-
-    public TodoSaveRequestDto(Long memberId, Long workspaceId, String content, Long parentId) {
-        this.memberId = memberId;
-        this.workspaceId = workspaceId;
-        this.content = content;
-        this.parentId = parentId;
-    }
 }

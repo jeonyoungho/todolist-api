@@ -54,6 +54,7 @@ public class WorkspaceApiController {
     @PostMapping("/workspace/participant")
     public ResponseEntity<Void> addParticipants(@Valid @RequestBody AddParticipantsRequestDto rq) {
         workspaceService.addParticipants(rq);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .build();

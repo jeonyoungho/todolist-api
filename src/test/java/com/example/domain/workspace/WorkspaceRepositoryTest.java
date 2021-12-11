@@ -6,6 +6,7 @@ import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -43,10 +44,12 @@ public class WorkspaceRepositoryTest {
         memberRepository.save(member);
 
         for (int i = 0; i < 10; i++) {
-            Participant participant = Participant.create(member);
-            Workspace workspace = Workspace.create("test-workspace" + i, participant);
+            Workspace workspace = Workspace.create("test-workspace" + i, member);
             workspaceRepository.save(workspace);
         }
+
+        em.flush();
+        em.clear();
 
         // when
         List<Workspace> workspaces = workspaceRepository.findAllByMemberIdFetchJoinParticipant(member.getId());
@@ -57,26 +60,26 @@ public class WorkspaceRepositoryTest {
 
     @Test
     public void findAllByMemberId_NotExistedWorkspaces_IsEmpty() {
-        // given
-        memberRepository.save(member);
-
         // when
-        List<Workspace> workspaces = workspaceRepository.findAllByMemberIdFetchJoinParticipant(null);
+        List<Workspace> workspaces = workspaceRepository.findAllByMemberIdFetchJoinParticipant(member.getId());
 
         // then
-        assertThat(workspaces.size()).isEqualTo(0);
+        Assertions.assertAll(
+                () -> assertThat(workspaces).isNotNull(),
+                () -> assertThat(workspaces.size()).isEqualTo(0)
+        );
     }
 
     @Test
     public void findAllByMemberId_WorkspaceIdIsNull_IsEmpty() {
-        // given
-        memberRepository.save(member);
-
         // when
         List<Workspace> workspaces = workspaceRepository.findAllByMemberIdFetchJoinParticipant(null);
 
         // then
-        assertThat(workspaces.size()).isEqualTo(0);
+        Assertions.assertAll(
+                () -> assertThat(workspaces).isNotNull(),
+                () -> assertThat(workspaces.size()).isEqualTo(0)
+        );
     }
 
     @Test
@@ -87,23 +90,22 @@ public class WorkspaceRepositoryTest {
         Member member2 = Member.create("test-id2", "test-pw", "test-name2", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
         memberRepository.save(member2);
 
-        Participant participant = Participant.create(member);
-        Participant participant2 = Participant.create(member2);
-
         final String testWorkspaceName= "test-workspace";
-        Workspace workspace = Workspace.create(testWorkspaceName, participant);
-        workspace.addParticipant(participant2);
+        Workspace workspace = Workspace.create(testWorkspaceName, member);
+        workspace.addParticipant(member2);
         workspaceRepository.save(workspace);
 
         em.flush();
         em.clear();
 
         // when
-        Workspace result = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspace.getId());
+        Workspace result = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspace.getId()).get();
 
         // then
-        assertThat(result.getName()).isEqualTo(testWorkspaceName);
-        assertThat(result.getParticipantGroup().getSize()).isEqualTo(2);
+        Assertions.assertAll(
+                () -> assertThat(result.getName()).isEqualTo(testWorkspaceName),
+                () -> assertThat(result.getParticipantGroup().getSize()).isEqualTo(2)
+        );
     }
 
 }

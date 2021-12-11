@@ -31,6 +31,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -59,23 +60,24 @@ public class MemberServiceTest {
     @Test
     public void signUp_ValidInput_Success() {
         // given
+        final long memberId = 1L;
+        ReflectionTestUtils.setField(member, "id", memberId);
+
         MemberSignUpRequestDto rq = MemberSignUpRequestDto.create(member.getAccountId(), "test-pw", "test-name", "test-city", "test-street", "test-zipcode");
 
         // mocking
         when(memberRepository.save(any())).thenReturn(member);
 
-        final long memberId = 1L;
-        ReflectionTestUtils.setField(member, "id", memberId);
-
         // when
         Long savedId = memberService.signUp(rq);
 
         // then
-        assertThat(savedId).isNotNull();
-        assertThat(savedId).isGreaterThanOrEqualTo(memberId);
-
-        verify(memberRepository).save(any());
-        verify(memberRepository, times(1)).save(any());
+        assertAll(
+                () -> assertThat(savedId).isNotNull(),
+                () -> assertThat(savedId).isGreaterThanOrEqualTo(memberId),
+                () -> verify(memberRepository).save(any()),
+                () -> verify(memberRepository, times(1)).save(any())
+        );
     }
 
     @Test(expected = CustomException.class)
@@ -106,17 +108,20 @@ public class MemberServiceTest {
        memberService.logout(accountId);
 
        // then
-       verify(refreshTokenService).hasKey(anyString());
-       verify(refreshTokenService, times(1)).hasKey(anyString());
+       assertAll(
+               () -> verify(refreshTokenService).hasKey(anyString()),
+               () -> verify(refreshTokenService, times(1)).hasKey(anyString()),
 
-       verify(refreshTokenService).delValue(anyString());
-       verify(refreshTokenService, times(1)).delValue(anyString());
+               () -> verify(refreshTokenService).delValue(anyString()),
+               () -> verify(refreshTokenService, times(1)).delValue(anyString())
+       );
+
    }
 
     @Test(expected = CustomException.class)
     public void logout_NotExistedKeyInRefreshTokenStore_ThrowCustomException() {
         // given
-        final String accountId = "test-id";
+        final String accountId = "fake-account-id";
 
         // mocking
         when(refreshTokenService.hasKey(anyString())).thenReturn(false);
@@ -134,17 +139,16 @@ public class MemberServiceTest {
        final String accessToken = "access-token";
        final String refreshToken = "refresh-token";
        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
-
-       // mocking
-       when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
+       TokenDto tokenDto = TokenDto.builder().build();
 
        Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(member.getAuthority().getValue()));
        UserDetails principal = new User(member.getAccountId(), "", authorities);
        Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+       // mocking
+       when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
        when(tokenProvider.getAuthentication(rq.getAccessToken())).thenReturn(authentication);
        when(refreshTokenService.getValue(authentication.getName())).thenReturn(refreshToken);
-
-       TokenDto tokenDto = TokenDto.builder().build();
        when(tokenProvider.generateTokenDto(authentication)).thenReturn(tokenDto);
        doNothing().when(refreshTokenService).setValue(authentication.getName(), tokenDto.getRefreshToken());
 
@@ -152,28 +156,28 @@ public class MemberServiceTest {
        memberService.reissue(rq);
 
        // then
-       verify(tokenProvider).validateToken(rq.getRefreshToken());
-       verify(tokenProvider, times(1)).validateToken(rq.getRefreshToken());
+       assertAll(
+               () -> verify(tokenProvider).validateToken(rq.getRefreshToken()),
+               () -> verify(tokenProvider, times(1)).validateToken(rq.getRefreshToken()),
 
-       verify(tokenProvider).getAuthentication(rq.getAccessToken());
-       verify(tokenProvider, times(1)).getAuthentication(rq.getAccessToken());
+               () -> verify(tokenProvider).getAuthentication(rq.getAccessToken()),
+               () -> verify(tokenProvider, times(1)).getAuthentication(rq.getAccessToken()),
 
-       verify(refreshTokenService).getValue(authentication.getName());
-       verify(refreshTokenService, times(1)).getValue(authentication.getName());
+               () -> verify(refreshTokenService).getValue(authentication.getName()),
+               () -> verify(refreshTokenService, times(1)).getValue(authentication.getName()),
 
-       verify(tokenProvider).generateTokenDto(authentication);
-       verify(tokenProvider, times(1)).generateTokenDto(authentication);
+               () -> verify(tokenProvider).generateTokenDto(authentication),
+               () -> verify(tokenProvider, times(1)).generateTokenDto(authentication),
 
-       verify(refreshTokenService).setValue(authentication.getName(), tokenDto.getRefreshToken());
-       verify(refreshTokenService, times(1)).setValue(authentication.getName(), tokenDto.getRefreshToken());
+               () -> verify(refreshTokenService).setValue(authentication.getName(), tokenDto.getRefreshToken()),
+               () -> verify(refreshTokenService, times(1)).setValue(authentication.getName(), tokenDto.getRefreshToken())
+       );
    }
 
     @Test(expected = CustomException.class)
     public void reissue_InValidToken_ThrowCustomException() {
         // given
-        final String accessToken = "access-token";
-        final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
+        ReissueRequestDto rq = ReissueRequestDto.create("access-token", "refresh-token");
 
         // mocking
         when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(false);
@@ -188,16 +192,14 @@ public class MemberServiceTest {
     @Test(expected = CustomException.class)
     public void reissue_SavedRefreshTokenIsNUll_ThrowCustomException() {
         // given
-        final String accessToken = "access-token";
-        final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
-
-        // mocking
-        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
+        ReissueRequestDto rq = ReissueRequestDto.create("access-token", "refresh-token");
 
         Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(member.getAuthority().getValue()));
         UserDetails principal = new User(member.getAccountId(), "", authorities);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+        // mocking
+        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
         when(tokenProvider.getAuthentication(rq.getAccessToken())).thenReturn(authentication);
         when(refreshTokenService.getValue(authentication.getName())).thenReturn(null);
 
@@ -211,16 +213,14 @@ public class MemberServiceTest {
     @Test(expected = CustomException.class)
     public void reissue_SavedRefreshTokenIsEmpty_ThrowCustomException() {
         // given
-        final String accessToken = "access-token";
-        final String refreshToken = "refresh-token";
-        ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
-
-        // mocking
-        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
+        ReissueRequestDto rq = ReissueRequestDto.create("access-token", "refresh-token");
 
         Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(member.getAuthority().getValue()));
         UserDetails principal = new User(member.getAccountId(), "", authorities);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+        // mocking
+        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
         when(tokenProvider.getAuthentication(rq.getAccessToken())).thenReturn(authentication);
         when(refreshTokenService.getValue(authentication.getName())).thenReturn("");
 
@@ -238,12 +238,12 @@ public class MemberServiceTest {
         final String refreshToken = "refresh-token";
         ReissueRequestDto rq = ReissueRequestDto.create(accessToken, refreshToken);
 
-        // mocking
-        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
-
         Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority(member.getAuthority().getValue()));
         UserDetails principal = new User(member.getAccountId(), "", authorities);
         Authentication authentication = new UsernamePasswordAuthenticationToken(principal, "", authorities);
+
+        // mocking
+        when(tokenProvider.validateToken(rq.getRefreshToken())).thenReturn(true);
         when(tokenProvider.getAuthentication(rq.getAccessToken())).thenReturn(authentication);
         when(refreshTokenService.getValue(authentication.getName())).thenReturn(refreshToken + "2");
 
@@ -267,15 +267,16 @@ public class MemberServiceTest {
 
         // when
         MemberListResponseDto result = memberService.findAll();
-
         List<Member> resultList = result.getMembers();
 
         // then
-        assertThat(resultList).isNotNull();
-        assertThat(resultList).isEqualTo(memberList);
+        assertAll(
+                () -> assertThat(resultList).isNotNull(),
+                () -> assertThat(resultList).isEqualTo(memberList),
 
-        verify(memberRepository).findAll();
-        verify(memberRepository, times(1)).findAll();
+                () -> verify(memberRepository).findAll(),
+                () -> verify(memberRepository, times(1)).findAll()
+        );
     }
 
 }

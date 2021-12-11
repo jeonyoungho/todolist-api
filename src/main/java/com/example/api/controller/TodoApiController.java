@@ -4,8 +4,12 @@ import com.example.api.dto.todo.TodoStatusUpdateRequestDto;
 import com.example.api.dto.todo.basic.BasicTodoResponseDto;
 import com.example.api.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.api.service.TodoService;
+import com.example.domain.todo.TodoRepository;
 import com.example.domain.todo.TodoStatus;
+import com.example.domain.workspace.WorkspaceRepository;
+import com.example.exception.CustomException;
 import com.example.exception.ErrorDetails;
+import com.example.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import static com.example.exception.ErrorCode.*;
+
 @Tag(name = "Todo", description = "Todo API")
 @RequiredArgsConstructor
 @RestController
@@ -30,6 +36,8 @@ import javax.validation.Valid;
 public class TodoApiController {
 
     private final TodoService todoService;
+    private final TodoRepository todoRepository;
+    private final WorkspaceRepository workspaceRepository;
 
     @Operation(summary = "기본 Todo 등록", description = "기본 Basic-Todo와 관련된 값들을 파라미터로 받아 할 일을 등록합니다.")
     @ApiResponses(value = {
@@ -59,6 +67,7 @@ public class TodoApiController {
     @PatchMapping("/todo/{todoId}")
     public ResponseEntity<Void> changeStatus(@PathVariable Long todoId, @Valid @RequestBody TodoStatusUpdateRequestDto rq) throws Throwable {
         todoService.changeStatus(todoId, rq);
+
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .build();
@@ -94,8 +103,8 @@ public class TodoApiController {
     })
     @DeleteMapping("/todo/{todoId}")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "Todo의 고유 식별자", schema = @Schema(implementation = Long.class))
-            @PathVariable Long todoId) {
+            @Parameter(description = "Todo의 고유 식별자", schema = @Schema(implementation = Long.class)) @PathVariable Long todoId) {
+
         todoService.delete(todoId);
 
         return ResponseEntity

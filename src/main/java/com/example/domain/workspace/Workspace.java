@@ -25,33 +25,43 @@ public class Workspace extends BaseEntity {
     private ParticipantGroup participantGroup = new ParticipantGroup();
 
     @Builder
-    public Workspace(String name, Participant... participants) {
+    public Workspace(String name, Member member) {
         this.name = name;
-        if (participants != null && participants.length > 0) {
-            for(Participant participant : participants) {
-                addParticipant(participant);
-            }
-        }
+        addParticipant(member);
     }
 
     //== 생성 메서드 ==//
-    public static Workspace create(String name, Participant... participants) {
+    public static Workspace create(String name, Member member) {
         return Workspace.builder()
                 .name(name)
-                .participants(participants)
+                .member(member)
                 .build();
     }
 
     //== 연관관계 메서드 ==//
-    public void addParticipant(Participant participant) {
+    public void addParticipant(Member member) {
+        Participant participant = Participant.create(member);
         participantGroup.addParticipant(participant);
         participant.setWorkspace(this);
     }
 
     public void addParticipants(List<Member> members) {
         for (Member member : members) {
-            Participant participant = Participant.create(member);
-            addParticipant(participant);
+            addParticipant(member);
         }
     }
+
+    public void removeParticipant(Long memberId) {
+        participantGroup.removeParticipant(memberId);
+    }
+
+    public List<Participant> getParticipants() {
+        return getParticipantGroup().getParticipants();
+    }
+
+    public Boolean isExistByAccountId(String accountId) {
+        return participantGroup.isExistByAccountId(accountId);
+    }
+
+
 }

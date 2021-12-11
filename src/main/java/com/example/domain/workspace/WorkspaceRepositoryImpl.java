@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.domain.member.QMember.member;
 import static com.example.domain.workspace.QParticipant.participant;
@@ -26,21 +27,23 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
     }
 
     @Override
-    public Workspace findByIdFetchJoinParticipantAndMember(Long workspaceId) {
-        return queryFactory
-                .select(workspace).distinct()
-                .from(workspace)
-                .leftJoin(workspace.participantGroup.participants, participant)
+    public Optional<Workspace> findByIdFetchJoinParticipantAndMember(Long workspaceId) {
+        Workspace result = queryFactory
+                .select(QWorkspace.workspace).distinct()
+                .from(QWorkspace.workspace)
+                .leftJoin(QWorkspace.workspace.participantGroup.participants, participant)
                 .fetchJoin()
                 .leftJoin(participant.member, member)
                 .fetchJoin()
                 .where(workspaceIdEq(workspaceId))
                 .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override
-    public Long countByIdAndCurrentAccountId(Long workspaceId, String currentAccountId) {
-        return queryFactory
+    public Boolean existsByIdAndCurrentAccountId(Long workspaceId, String currentAccountId) {
+        long size = queryFactory
                 .selectFrom(workspace)
                 .leftJoin(workspace.participantGroup.participants, participant)
                 .where(
@@ -48,6 +51,8 @@ public class WorkspaceRepositoryImpl implements WorkspaceRepositoryCustom {
                         participantMemberAccountIdEq(currentAccountId)
                 )
                 .fetchCount();
+
+        return size > 0;
     }
 
     private BooleanExpression participantMemberAccountIdEq(String currentAccountId) {

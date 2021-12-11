@@ -6,8 +6,10 @@ import com.example.api.dto.todo.basic.BasicTodoSaveRequestDto;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
-import com.example.domain.todo.*;
-import com.example.domain.workspace.Participant;
+import com.example.domain.todo.BasicTodo;
+import com.example.domain.todo.Todo;
+import com.example.domain.todo.TodoRepository;
+import com.example.domain.todo.TodoStatus;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import com.example.exception.CustomException;
@@ -32,6 +34,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -64,12 +67,10 @@ public class TodoServiceTest {
     @Test
     public void saveBasicTodo_ValidInput_Success() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
 
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.create(member, workspace, "parent-todo-test-content", null, 10);
         ReflectionTestUtils.setField(parentTodo, "id", anyLong());
-
-        Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20);
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
                 .memberId(member.getId())
@@ -81,23 +82,45 @@ public class TodoServiceTest {
         when(memberRepository.findById(rq.getMemberId())).thenReturn(Optional.of(member));
         when(todoRepository.findById(rq.getParentId())).thenReturn(Optional.of(parentTodo));
         when(workspaceRepository.findById(rq.getWorkspaceId())).thenReturn(Optional.of(workspace));
-        when(todoRepository.save(any(Todo.class))).thenReturn(childTodo);
+        when(todoRepository.save(any(Todo.class))).thenReturn(any(Todo.class));
 
         // when
         Long savedTodoId = todoService.saveBasicTodo(rq);
 
         // then
-        verify(memberRepository).findById(rq.getMemberId());
-        verify(memberRepository, times(1)).findById(rq.getMemberId());
+        assertAll(
+            () -> verify(memberRepository).findById(rq.getMemberId()),
+            () -> verify(memberRepository, times(1)).findById(rq.getMemberId()),
 
-        verify(todoRepository).findById(rq.getParentId());
-        verify(todoRepository, times(1)).findById(rq.getParentId());
+            () -> verify(todoRepository).findById(rq.getParentId()),
+            () -> verify(todoRepository, times(1)).findById(rq.getParentId()),
 
-        verify(workspaceRepository).findById(rq.getWorkspaceId());
-        verify(workspaceRepository, times(1)).findById(rq.getWorkspaceId());
+            () -> verify(workspaceRepository).findById(rq.getWorkspaceId()),
+            () -> verify(workspaceRepository, times(1)).findById(rq.getWorkspaceId()),
 
-        verify(todoRepository).save(any(Todo.class));
-        verify(todoRepository, times(1)).save(any(Todo.class));
+            () -> verify(todoRepository).save(any(Todo.class)),
+            () -> verify(todoRepository, times(1)).save(any(Todo.class))
+        );
+
+    }
+
+    @Test(expected = CustomException.class)
+    public void saveBasicTodo_NotExistedMember_ThrowCustomException() {
+        // given
+        BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
+                .memberId(member.getId())
+                .build();
+
+        // mocking
+        when(memberRepository.findById(rq.getMemberId())).thenReturn(Optional.empty());
+
+
+        // when
+        Long savedTodoId = todoService.saveBasicTodo(rq);
+
+        // then
+        fail("회원 조회시 예외가 발생해야 합니다.");
+
     }
 
     @Test(expected = CustomException.class)
@@ -116,15 +139,15 @@ public class TodoServiceTest {
         Long savedTodoId = todoService.saveBasicTodo(rq);
 
         // then
-        fail("회원의 권한을 체크시 예외가 발생해야 합니다.");
+        fail("Todo 저장 유효성 체크시 예외가 발생해야 합니다.");
 
     }
 
     @Test
     public void saveBasicTodo_ParentTodoIsNull_Success() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo todo = BasicTodo.create(member, workspace, "todo-test-content", null, 10);
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
                 .memberId(member.getId())
@@ -140,31 +163,16 @@ public class TodoServiceTest {
         Long savedTodoId = todoService.saveBasicTodo(rq);
 
         // then
-        verify(memberRepository).findById(rq.getMemberId());
-        verify(memberRepository, times(1)).findById(rq.getMemberId());
+        assertAll(
+            () -> verify(memberRepository).findById(rq.getMemberId()),
+            () -> verify(memberRepository, times(1)).findById(rq.getMemberId()),
 
-        verify(workspaceRepository).findById(rq.getWorkspaceId());
-        verify(workspaceRepository, times(1)).findById(rq.getWorkspaceId());
+            () -> verify(workspaceRepository).findById(rq.getWorkspaceId()),
+            () -> verify(workspaceRepository, times(1)).findById(rq.getWorkspaceId()),
 
-        verify(todoRepository).save(any(Todo.class));
-        verify(todoRepository, times(1)).save(any(Todo.class));
-    }
-
-    @Test(expected = CustomException.class)
-    public void saveBasicTodo_NotExistedMember_ThrowCustomException() {
-        // given
-        BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
-                .memberId(member.getId())
-                .build();
-
-        // mocking
-        when(memberRepository.findById(rq.getMemberId())).thenReturn(Optional.empty());
-
-        // when
-        Long savedTodoId = todoService.saveBasicTodo(rq);
-
-        // then
-        fail("회원 엔티티 조회시 예외가 발생해야 합니다.");
+            () -> verify(todoRepository).save(any(Todo.class)),
+            () -> verify(todoRepository, times(1)).save(any(Todo.class))
+        );
     }
 
     @Test(expected = CustomException.class)
@@ -189,10 +197,10 @@ public class TodoServiceTest {
     @Test(expected = CustomException.class)
     public void saveBasicTodo_ParentTodoIsNotRoot_ThrowCustomException() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
 
-        Todo grandParentTodo = BasicTodo.createBasicTodo(member, workspace, "grand-parent-todo-test-content", null, 10);
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", grandParentTodo, 20);
+        Todo grandParentTodo = BasicTodo.create(member, workspace, "grand-parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.create(member, workspace, "parent-todo-test-content", grandParentTodo, 20);
         ReflectionTestUtils.setField(parentTodo, "id", anyLong());
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
@@ -214,7 +222,7 @@ public class TodoServiceTest {
     @Test(expected = CustomException.class)
     public void saveBasicTodo_NotExistedWorkspace_ThrowCustomException() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
 
         BasicTodoSaveRequestDto rq = BasicTodoSaveRequestDto.builder()
                 .memberId(member.getId())
@@ -235,29 +243,29 @@ public class TodoServiceTest {
     @Test
     public void findAllBasicTodos_ValidInput_Success() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-
         final Pageable pageable = PageRequest.of(0, 10);
         final Long workspaceId = 1L;
         final TodoStatus status = TodoStatus.UNCOMPLETED;
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())).thenReturn(1L);
+        when(workspaceRepository.existsByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())).thenReturn(true);
         when(todoRepository.findAllBasicTodos(pageable, workspaceId, status)).thenReturn(any(Page.class));
 
         // when
         Page<BasicTodoResponseDto> result = todoService.findAllBasicTodos(pageable, workspaceId, status);
 
         // then
-        verify(workspaceRepository).existsById(workspaceId);
-        verify(workspaceRepository, times(1)).existsById(workspaceId);
+        assertAll(
+            () -> verify(workspaceRepository).existsById(workspaceId),
+            () -> verify(workspaceRepository, times(1)).existsById(workspaceId),
 
-        verify(workspaceRepository).countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId());
-        verify(workspaceRepository, times(1)).countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId());
+            () -> verify(workspaceRepository).existsByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId()),
+            () -> verify(workspaceRepository, times(1)).existsByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId()),
 
-        verify(todoRepository).findAllBasicTodos(pageable, workspaceId, status);
-        verify(todoRepository, times(1)).findAllBasicTodos(pageable, workspaceId, status);
+            () -> verify(todoRepository).findAllBasicTodos(pageable, workspaceId, status),
+            () -> verify(todoRepository, times(1)).findAllBasicTodos(pageable, workspaceId, status)
+        );
     }
 
     @Test(expected = CustomException.class)
@@ -278,12 +286,9 @@ public class TodoServiceTest {
     }
 
     @Test(expected = CustomException.class)
-    public void findAllBasicTodos_InvalidRequestByClient_ThrowCustomException() {
+    public void findAllBasicTodos_MemberNotInWorkspace_ThrowCustomException() {
         // given
-//        SecurityContextHolder.clearContext();
-
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        workspace.addParticipant(Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
 
         final Pageable pageable = PageRequest.of(0, 10);
         final Long workspaceId = 1L;
@@ -291,7 +296,7 @@ public class TodoServiceTest {
 
         // mocking
         when(workspaceRepository.existsById(workspaceId)).thenReturn(true);
-        when(workspaceRepository.countByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())).thenReturn(0L);
+        when(workspaceRepository.existsByIdAndCurrentAccountId(workspaceId, SecurityUtil.getCurrentAccountId())).thenReturn(false);
 
         // when
         Page<BasicTodoResponseDto> result = todoService.findAllBasicTodos(pageable, workspaceId, status);
@@ -301,66 +306,39 @@ public class TodoServiceTest {
     }
 
     @Test
-    public void changeStatus_ValidInputWithUncompletedStatus_Success() throws Throwable {
+    public void changeStatus_ValidInputWithUncompletedStatus_Success() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo todo = BasicTodo.create(member, workspace, "todo-test-content", null, 10);
 
-        final Long todoId = 1L;
+        final Long todoId = anyLong();
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
                 .status(TodoStatus.UNCOMPLETED)
                 .build();
 
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(todo);
+        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(Optional.of(todo));
 
         // when
         todoService.changeStatus(todoId, rq);
 
         // then
-        verify(todoRepository).existsById(todoId);
-        verify(todoRepository, times(1)).existsById(todoId);
-
-        verify(todoRepository).findByIdFetchJoinMember(todoId);
-        verify(todoRepository, times(1)).findByIdFetchJoinMember(todoId);
+        assertAll(
+            () -> verify(todoRepository).findByIdFetchJoinMember(todoId),
+            () -> verify(todoRepository, times(1)).findByIdFetchJoinMember(todoId)
+        );
     }
 
     @Test(expected = CustomException.class)
-    public void changeStatus_InvalidRequestByClientWithUncompletedStatus_ThrowCustomException() throws Throwable {
+    public void changeStatus_NotExistedTodoWithUncompletedStatus_ThrowCustomException() {
         // given
-        SecurityContextHolder.clearContext();
-
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
-
-        final Long todoId = 1L;
+        final Long todoId = anyLong();
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
                 .status(TodoStatus.UNCOMPLETED)
                 .build();
 
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(todo);
-
-        // when
-        todoService.changeStatus(todoId, rq);
-
-        // then
-        fail("Todo 상태 변경 권한 체크시 예외가 발생해야 합니다.");
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void changeStatus_NotExistedTodoWithUncompletedStatus_ThrowNullPointerException() throws Throwable {
-        // given
-        final Long todoId = 1L;
-        final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
-                .status(TodoStatus.UNCOMPLETED)
-                .build();
-
-        // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(null);
+        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(Optional.empty());
 
         // when
         todoService.changeStatus(todoId, rq);
@@ -369,48 +347,87 @@ public class TodoServiceTest {
         fail("Todo 조회시 예외가 발생해야 합니다.");
     }
 
-    @Test
-    public void changeStatus_ValidInputWithCompletedStatus_Success() {
+    @Test(expected = CustomException.class)
+    public void changeStatus_InvalidRequestByClientWithUncompletedStatus_ThrowCustomException() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
+        SecurityContextHolder.clearContext();
 
-        final Long todoId = 1L;
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo todo = BasicTodo.create(member, workspace, "todo-test-content", null, 10);
+
+        final Long todoId = anyLong();
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
-                .status(TodoStatus.COMPLETED)
+                .status(TodoStatus.UNCOMPLETED)
                 .build();
 
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(todo);
+        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(Optional.of(todo));
 
         // when
         todoService.changeStatus(todoId, rq);
 
         // then
-        verify(todoRepository).existsById(todoId);
-        verify(todoRepository, times(1)).existsById(todoId);
-
-        verify(todoRepository).findByIdFetchJoinMemberAndChilds(todoId);
-        verify(todoRepository, times(1)).findByIdFetchJoinMemberAndChilds(todoId);
+        fail("Todo 상태 변경 권한 체크시 예외가 발생해야 합니다.");
     }
 
-    @Test(expected = CustomException.class)
-    public void changeStatus_IsAllChildNotCompletedWithCompletedStatus_ThrowCustomException() throws Throwable {
+    @Test
+    public void changeStatus_ValidInputWithCompletedStatus_Success() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
-        Set<BasicTodo> childs = Collections.singleton(BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20));
-        ReflectionTestUtils.setField(parentTodo, "childs", childs);
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo todo = BasicTodo.create(member, workspace, "todo-test-content", null, 10);
 
-        final Long todoId = 1L;
+        final Long todoId = anyLong();
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
                 .status(TodoStatus.COMPLETED)
                 .build();
 
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(parentTodo);
+        when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(Optional.of(todo));
+
+        // when
+        todoService.changeStatus(todoId, rq);
+
+        // then
+        assertAll(
+            () -> verify(todoRepository).findByIdFetchJoinMemberAndChilds(todoId),
+            () -> verify(todoRepository, times(1)).findByIdFetchJoinMemberAndChilds(todoId)
+        );
+    }
+
+    @Test(expected = CustomException.class)
+    public void changeStatus_NotExistedTodoWithCompletedStatus_ThrowCustomException() {
+        // given
+        final Long todoId = anyLong();
+        final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
+                .status(TodoStatus.UNCOMPLETED)
+                .build();
+
+        // mocking
+        when(todoRepository.findByIdFetchJoinMember(todoId)).thenReturn(Optional.empty());
+
+        // when
+        todoService.changeStatus(todoId, rq);
+
+        // then
+        fail("Todo 조회시 예외가 발생해야 합니다.");
+    }
+
+
+    @Test(expected = CustomException.class)
+    public void changeStatus_IsAllChildNotCompletedWithCompletedStatus_ThrowCustomException() {
+        // given
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo parentTodo = BasicTodo.create(member, workspace, "parent-todo-test-content", null, 10);
+        Set<BasicTodo> childs = Collections.singleton(BasicTodo.create(member, workspace, "child-todo-test-content", parentTodo, 20));
+        ReflectionTestUtils.setField(parentTodo, "childs", childs);
+
+        final Long todoId = anyLong();
+        final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
+                .status(TodoStatus.COMPLETED)
+                .build();
+
+        // mocking
+        when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(Optional.of(parentTodo));
 
         // when
         todoService.changeStatus(todoId, rq);
@@ -424,17 +441,16 @@ public class TodoServiceTest {
         // given
         SecurityContextHolder.clearContext();
 
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo todo = BasicTodo.createBasicTodo(member, workspace, "todo-test-content", null, 10);
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo todo = BasicTodo.create(member, workspace, "todo-test-content", null, 10);
 
-        final Long todoId = 1L;
+        final Long todoId = anyLong();
         final TodoStatusUpdateRequestDto rq = TodoStatusUpdateRequestDto.builder()
                 .status(TodoStatus.COMPLETED)
                 .build();
 
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(todo);
+        when(todoRepository.findByIdFetchJoinMemberAndChilds(todoId)).thenReturn(Optional.of(todo));
 
         // when
         todoService.changeStatus(todoId, rq);
@@ -446,45 +462,38 @@ public class TodoServiceTest {
     @Test
     public void delete_ValidInput_Success() {
         // given
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo parentTodo = BasicTodo.create(member, workspace, "parent-todo-test-content", null, 10);
 
-        Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content", parentTodo, 20);
+        Todo childTodo = BasicTodo.create(member, workspace, "child-todo-test-content", parentTodo, 20);
         Set<Todo> childs = new LinkedHashSet<>();
         childs.add(childTodo);
         ReflectionTestUtils.setField(parentTodo, "childs", childs);
 
-        final Long todoId = 1L;
-
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId)).thenReturn(parentTodo);
-        doNothing().when(todoRepository).deleteById(todoId);
+        when(todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(anyLong())).thenReturn(Optional.of(parentTodo));
+        doNothing().when(todoRepository).deleteById(anyLong());
 
         // when
-        todoService.delete(todoId);
+        todoService.delete(anyLong());
 
         // then
-        verify(todoRepository).existsById(todoId);
-        verify(todoRepository, times(1)).existsById(todoId);
+        assertAll(
+                () -> verify(todoRepository).findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(anyLong()),
+                () -> verify(todoRepository, times(1)).findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(anyLong()),
 
-        verify(todoRepository).findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId);
-        verify(todoRepository, times(1)).findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId);
-
-        verify(todoRepository).deleteById(todoId);
-        verify(todoRepository, times(1)).deleteById(todoId);
+                () -> verify(todoRepository).deleteById(anyLong()),
+                () -> verify(todoRepository, times(1)).deleteById(anyLong())
+        );
     }
 
     @Test(expected = CustomException.class)
-    public void delete_NotExistedTodo_Success() {
-        // given
-        final Long todoId = 1L;
-
+    public void delete_NotExistedTodo_ThrowCustomException() {
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(false);
+        when(todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(anyLong())).thenReturn(Optional.empty());
 
         // when
-        todoService.delete(todoId);
+        todoService.delete(anyLong());
 
         // then
         fail("Todo 가 존재하는지 확인시 예외가 발생해야 합니다.");
@@ -495,14 +504,13 @@ public class TodoServiceTest {
         // given
         SecurityContextHolder.clearContext();
 
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
+        Workspace workspace = Workspace.create("test-workspace", member);
+        Todo parentTodo = BasicTodo.create(member, workspace, "parent-todo-test-content", null, 10);
 
-        final Long todoId = 1L;
+        final Long todoId = anyLong();
 
         // mocking
-        when(todoRepository.existsById(todoId)).thenReturn(true);
-        when(todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId)).thenReturn(parentTodo);
+        when(todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(todoId)).thenReturn(Optional.of(parentTodo));
 
         // when
         todoService.delete(todoId);

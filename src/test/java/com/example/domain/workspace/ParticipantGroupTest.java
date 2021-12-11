@@ -24,7 +24,7 @@ public class ParticipantGroupTest {
         ParticipantGroup participantGroup = createParticipantGroup(member);
 
         // when
-        Boolean expected = participantGroup.isExistByMemberId(member.getId());
+        Boolean expected = participantGroup.isExistByAccountId(member.getAccountId());
 
         // then
         assertThat(expected).isTrue();
@@ -36,7 +36,7 @@ public class ParticipantGroupTest {
         ParticipantGroup participantGroup = createParticipantGroup(member);
 
         // when
-        Boolean expected = participantGroup.isExistByMemberId(555L);
+        Boolean expected = participantGroup.isExistByAccountId("fake-account-id");
 
         // then
         assertThat(expected).isFalse();

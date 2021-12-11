@@ -9,15 +9,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.EntityManager;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Import(TestQuerydslConfig.class)
 @RunWith(SpringRunner.class)
 @CustomDataJpaTest
 public class MemberRepositoryTest {
 
+    @Autowired
+    EntityManager em;
     @Autowired
     MemberRepository memberRepository;
 
@@ -31,20 +35,25 @@ public class MemberRepositoryTest {
     @Test
     public void save_ValidInput_Success() {
         // given
-        Member saveMember = memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
+
+        em.flush();
+        em.clear();
 
         // when
-        Member findMember = memberRepository.findById(saveMember.getId()).get();
+        Member findMember = memberRepository.findById(savedMember.getId()).get();
 
         // then
-        assertThat(findMember).isEqualTo(saveMember);
+        assertAll(
+                () -> assertThat(findMember).isNotNull(),
+                () -> assertThat(findMember.getAccountId()).isEqualTo(savedMember.getAccountId()),
+                () -> assertThat(findMember.getAccountPw()).isEqualTo(savedMember.getAccountPw()),
+                () -> assertThat(findMember.getName()).isEqualTo(savedMember.getName())
+        );
     }
 
     @Test
     public void findById_NotExistedMemberId_False() {
-        // given
-        memberRepository.save(member);
-
         // when
         Optional<Member> result = memberRepository.findById(500L);
 
@@ -55,20 +64,24 @@ public class MemberRepositoryTest {
     @Test
     public void findByAccountId_ValidInput_True() {
         // given
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
+
+        em.flush();
+        em.clear();
 
         // when
-        Optional<Member> result = memberRepository.findByAccountId(member.getAccountId());
+        Member findMember = memberRepository.findByAccountId(savedMember.getAccountId()).get();
 
         // then
-        assertThat(result.isPresent()).isTrue();
+        assertAll(
+                () -> assertThat(findMember.getAccountId()).isEqualTo(savedMember.getAccountId()),
+                () -> assertThat(findMember.getAccountPw()).isEqualTo(savedMember.getAccountPw()),
+                () -> assertThat(findMember.getName()).isEqualTo(savedMember.getName())
+        );
     }
 
     @Test
     public void findByAccountId_NotExistedAccountId_False() {
-        // given
-        memberRepository.save(member);
-
         // when
         Optional<Member> result = memberRepository.findByAccountId("fake-id");
 
@@ -81,6 +94,9 @@ public class MemberRepositoryTest {
         // given
         memberRepository.save(member);
 
+        em.flush();
+        em.clear();
+
         // when
         boolean result = memberRepository.existsByAccountId(member.getAccountId());
 
@@ -90,9 +106,6 @@ public class MemberRepositoryTest {
 
     @Test
     public void existsByAccountId_NotExistedAccountId_False() {
-        // given
-        memberRepository.save(member);
-
         // when
         boolean result = memberRepository.existsByAccountId("fake-id");
 

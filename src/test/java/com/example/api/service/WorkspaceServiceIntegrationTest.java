@@ -66,13 +66,14 @@ public class WorkspaceServiceIntegrationTest {
         final String testWorkspaceName = "test-workspace-name";
         WorkspaceSaveRequestDto rq = WorkspaceSaveRequestDto.create(member.getId(), testWorkspaceName);
 
+        em.flush();
+        em.clear();
+
         // when
         Long workspaceId = workspaceService.saveWorkspace(rq);
-        Workspace result = workspaceRepository.findById(workspaceId).get();
 
         // then
-        assertThat(workspaceId).isGreaterThanOrEqualTo(0L);
-        assertThat(result.getName()).isEqualTo(testWorkspaceName);
+        assertThat(workspaceId).isNotNull();
     }
 
     @Test
@@ -80,8 +81,7 @@ public class WorkspaceServiceIntegrationTest {
         // given
         memberRepository.save(member);
 
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace", participant);
+        Workspace workspace = Workspace.create("test-workspace", member);
         workspaceRepository.save(workspace);
 
         List<Long> memberIds = new ArrayList<>();
@@ -91,10 +91,16 @@ public class WorkspaceServiceIntegrationTest {
             memberIds.add(saveMember.getId());
         }
 
+        em.flush();
+        em.clear();
+
         // when
         workspaceService.addParticipants(AddParticipantsRequestDto.create(workspace.getId(), memberIds));
 
-        Workspace result = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspace.getId());
+        em.flush();
+        em.clear();
+
+        Workspace result = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspace.getId()).get();
         List<Participant> participants = result.getParticipantGroup().getParticipants();
 
         // then
@@ -107,9 +113,11 @@ public class WorkspaceServiceIntegrationTest {
         memberRepository.save(member);
 
         final String testWorkspaceName = "test-workspace-name";
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create(testWorkspaceName, participant);
+        Workspace workspace = Workspace.create(testWorkspaceName, member);
         workspaceRepository.save(workspace);
+
+        em.flush();
+        em.clear();
 
         // when
         WorkspaceResponseDto result = workspaceService.findById(workspace.getId());
@@ -123,9 +131,11 @@ public class WorkspaceServiceIntegrationTest {
         // given
         memberRepository.save(member);
 
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace-name", participant);
+        Workspace workspace = Workspace.create("test-workspace-name", member);
         workspaceRepository.save(workspace);
+
+        em.flush();
+        em.clear();
 
         // when
         workspaceService.deleteParticipantByMemberId(member.getId(), workspace.getId());
@@ -140,8 +150,7 @@ public class WorkspaceServiceIntegrationTest {
         // given
         memberRepository.save(member);
 
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace-name", participant);
+        Workspace workspace = Workspace.create("test-workspace-name", member);
 
         List<Member> members = new ArrayList<>();
         for(int i=0;i<20;i++) {
@@ -153,11 +162,14 @@ public class WorkspaceServiceIntegrationTest {
         workspace.addParticipants(members);
         workspaceRepository.save(workspace);
 
+        em.flush();
+        em.clear();
+
         // when
         List<MemberResponseDto> results = workspaceService.findMembersById(workspace.getId());
 
         // then
-        assertThat(results.size()).isEqualTo(21);
+        assertThat(results.size()).isEqualTo(21); // workspace 생성한 회원 1 + 추가된 참가자 20 = 21
     }
 
 }

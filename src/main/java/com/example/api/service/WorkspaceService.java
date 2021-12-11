@@ -7,7 +7,6 @@ import com.example.api.dto.workspace.WorkspaceSaveRequestDto;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
 import com.example.domain.workspace.Participant;
-import com.example.domain.workspace.ParticipantGroup;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import com.example.exception.CustomException;
@@ -36,9 +35,7 @@ public class WorkspaceService {
 
         SecurityUtil.checkValidRequest(member.getAccountId());
 
-        Participant participant = Participant.create(member);
-
-        Workspace workspace = Workspace.create(rq.getName(), participant);
+        Workspace workspace = Workspace.create(rq.getWorkspaceName(), member);
         workspaceRepository.save(workspace);
 
         return workspace.getId();
@@ -46,9 +43,12 @@ public class WorkspaceService {
 
     @Transactional
     public void addParticipants(AddParticipantsRequestDto rq) {
-        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId());
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(rq.getWorkspaceId())
+                        .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
 
-        validateWorkspaceAuthority(workspace);
+        if (!workspace.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
+            throw new CustomException(INVALID_REQUEST);
+        }
 
         List<Member> members = memberRepository.findAllById(rq.getAccountIds());
 
@@ -63,22 +63,16 @@ public class WorkspaceService {
     }
 
     public List<WorkspaceResponseDto> findAllByMemberId(Long memberId) {
-        if (!memberRepository.existsById(memberId)) {
-            throw new CustomException(MEMBER_NOT_FOUND);
-        }
-
         return workspaceRepository.findAllByMemberIdFetchJoinParticipant(memberId).stream()
                 .map(WorkspaceResponseDto::new)
                 .collect(Collectors.toList());
     }
 
     public List<MemberResponseDto> findMembersById(Long workspaceId) {
-        if (!workspaceRepository.existsById(workspaceId)) {
-            throw new CustomException(WORKSPACE_NOT_FOUND);
-        }
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)
+                .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
 
-        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
-        List<Participant> participants = workspace.getParticipantGroup().getParticipants();
+        List<Participant> participants = workspace.getParticipants();
         return participants.stream()
                 .map(p -> p.getMember())
                 .map(MemberResponseDto::new)
@@ -87,31 +81,25 @@ public class WorkspaceService {
 
     @Transactional
     public void deleteById(Long workspaceId) {
-        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)
+                .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
 
-        validateWorkspaceAuthority(workspace);
+        if (!workspace.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
+            throw new CustomException(INVALID_REQUEST);
+        }
 
         workspaceRepository.delete(workspace);
     }
 
     @Transactional
     public void deleteParticipantByMemberId(Long memberId, Long workspaceId) {
-        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId);
+        Workspace workspace = workspaceRepository.findByIdFetchJoinParticipantAndMember(workspaceId)
+                .orElseThrow(() -> new CustomException(WORKSPACE_NOT_FOUND));
 
-        validateWorkspaceAuthority(workspace);
-
-        workspace.getParticipantGroup().removeParticipant(memberId);
-    }
-
-    private void validateWorkspaceAuthority(Workspace workspace) {
-        if (workspace == null) {
-            throw new CustomException(WORKSPACE_NOT_FOUND);
+        if (!workspace.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
+            throw new CustomException(INVALID_REQUEST);
         }
 
-        ParticipantGroup participantGroup = workspace.getParticipantGroup();
-        if (!participantGroup.isExistByAccountId(SecurityUtil.getCurrentAccountId())) {
-            throw new CustomException(UNAUTHORIZED_MEMBER);
-        }
-
+        workspace.removeParticipant(memberId);
     }
 }

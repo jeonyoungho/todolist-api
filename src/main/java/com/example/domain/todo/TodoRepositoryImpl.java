@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.domain.member.QMember.member;
 import static com.example.domain.todo.QBasicTodo.basicTodo;
@@ -23,40 +24,46 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Todo findByIdFetchJoinMember(Long todoId) {
-        return queryFactory
+    public Optional<Todo> findByIdFetchJoinMember(Long todoId) {
+        Todo result = queryFactory
                 .select(todo)
                 .from(todo)
                 .leftJoin(todo.member, member).fetchJoin()
                 .where(todoIdEq(todoId))
                 .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override
-    public Todo findByIdFetchJoinMemberAndChilds(Long todoId) {
+    public Optional<Todo> findByIdFetchJoinMemberAndChilds(Long todoId) {
         QTodo subTodo = new QTodo("subTodo");
 
-        return queryFactory
+        Todo result = queryFactory
                 .select(todo).distinct()
                 .from(todo)
                 .leftJoin(todo.member, member).fetchJoin()
                 .leftJoin(todo.childs, subTodo).fetchJoin()
                 .where(todoIdEq(todoId))
                 .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override
-    public Todo findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(Long todoId) {
+    public Optional<Todo> findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(Long todoId) {
         QTodo subTodo = new QTodo("subTodo");
 
-        return queryFactory
-                .select(todo).distinct()
-                .from(todo)
-                .leftJoin(todo.member, member).fetchJoin()
-                .leftJoin(todo.todoWorkspaceGroup.todoWorkspaces, todoWorkspace).fetchJoin()
-                .leftJoin(todo.childs, subTodo).fetchJoin()
+        Todo result = queryFactory
+                .select(QTodo.todo).distinct()
+                .from(QTodo.todo)
+                .leftJoin(QTodo.todo.member, member).fetchJoin()
+                .leftJoin(QTodo.todo.todoWorkspaceGroup.todoWorkspaces, todoWorkspace).fetchJoin()
+                .leftJoin(QTodo.todo.childs, subTodo).fetchJoin()
                 .where(todoIdEq(todoId))
                 .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 
     @Override

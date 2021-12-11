@@ -6,12 +6,10 @@ import com.example.config.TestQuerydslConfig;
 import com.example.domain.member.Authority;
 import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
-import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -24,7 +22,7 @@ import javax.persistence.EntityManager;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Import(TestQuerydslConfig.class)
 @RunWith(SpringRunner.class)
@@ -52,20 +50,22 @@ public class TodoRepositoryTest {
         // given
         memberRepository.save(member);
 
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
         workspaceRepository.save(workspace);
 
         final String content = "todo-test-content";
         final int expectedTime = 10;
-        Todo todo = BasicTodo.createBasicTodo(member, workspace, content, null, expectedTime);
+        Todo todo = BasicTodo.create(member, workspace, content, null, expectedTime);
         todoRepository.save(todo);
+
+        em.flush();
+        em.clear();
 
         // when
         BasicTodo result= (BasicTodo) todoRepository.findById(todo.getId()).get();
 
         // then
-        Assertions.assertAll(
-                () -> assertThat(result.getMember()).isEqualTo(member),
+        assertAll(
                 () -> assertThat(result.getMember().getAccountId()).isEqualTo(member.getAccountId()),
                 () -> assertThat(result.getContent()).isEqualTo(content),
                 () -> assertThat(result.getExpectedTime()).isEqualTo(expectedTime)
@@ -74,8 +74,6 @@ public class TodoRepositoryTest {
 
     @Test
     public void findById_ValidInputByBasicTodo_False() {
-        // given
-
         // when
         Optional todo = todoRepository.findById(1L);
 
@@ -88,21 +86,26 @@ public class TodoRepositoryTest {
         // given
         memberRepository.save(member);
 
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
         workspaceRepository.save(workspace);
 
         final String content = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, content, null, 10);
+        Todo parentTodo = BasicTodo.create(member, workspace, content, null, 10);
         todoRepository.save(parentTodo);
 
+        em.flush();
+        em.clear();
+
         // when
-        Todo result = todoRepository.findByIdFetchJoinMember(parentTodo.getId());
+        Todo result = todoRepository.findByIdFetchJoinMember(parentTodo.getId()).get();
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).isEqualTo(content);
-        assertThat(result.getMember()).isNotNull();
-        assertThat(result.getMember().getAccountId()).isEqualTo("test-id");
+        assertAll(
+                () -> assertThat(result).isNotNull(),
+                () -> assertThat(result.getContent()).isEqualTo(content),
+                () -> assertThat(result.getMember()).isNotNull(),
+                () -> assertThat(result.getMember().getAccountId()).isEqualTo("test-id")
+        );
     }
 
     @Test
@@ -110,28 +113,30 @@ public class TodoRepositoryTest {
         // given
         memberRepository.save(member);
 
-        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace-name", member);
         workspaceRepository.save(workspace);
 
         final String parentTodoContent = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, parentTodoContent, null, 10);
+        Todo parentTodo = BasicTodo.create(member, workspace, parentTodoContent, null, 10);
         todoRepository.save(parentTodo);
 
-        Todo childTodo1 = BasicTodo.createBasicTodo(member, workspace, "child1-todo-test-content", parentTodo, 20);
+        Todo childTodo1 = BasicTodo.create(member, workspace, "child1-todo-test-content", parentTodo, 20);
         todoRepository.save(childTodo1);
 
-        Todo childTodo2 = BasicTodo.createBasicTodo(member, workspace, "child2-todo-test-content", parentTodo, 20);
+        Todo childTodo2 = BasicTodo.create(member, workspace, "child2-todo-test-content", parentTodo, 20);
         todoRepository.save(childTodo2);
 
         em.flush();
         em.clear();
 
         // when
-        Todo result = todoRepository.findByIdFetchJoinMemberAndChilds(parentTodo.getId());
+        Todo result = todoRepository.findByIdFetchJoinMemberAndChilds(parentTodo.getId()).get();
 
         // then
-        assertThat(result.getChilds().size()).isEqualTo(2);
-        assertThat(result.getContent()).isEqualTo(parentTodoContent);
+        assertAll(
+                () -> assertThat(result.getChilds().size()).isEqualTo(2),
+                () -> assertThat(result.getContent()).isEqualTo(parentTodoContent)
+        );
     }
 
     @Test
@@ -139,79 +144,53 @@ public class TodoRepositoryTest {
         // given
         memberRepository.save(member);
 
-        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace-name", member);
         workspaceRepository.save(workspace);
 
         Member member2 = Member.create("test-id2", "test-pw", "test-name2", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
         memberRepository.save(member2);
 
-        Workspace workspace2 = Workspace.create("test-workspace-name2", Participant.create(member2));
+        Workspace workspace2 = Workspace.create("test-workspace-name2", member);
         workspaceRepository.save(workspace2);
 
         final String parentTodoContent = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, parentTodoContent, null, 1);
+        Todo parentTodo = BasicTodo.create(member, workspace, parentTodoContent, null, 1);
         parentTodo.addTodoWorkspace(workspace2);
         todoRepository.save(parentTodo);
 
 
-        Todo childTodo1 = BasicTodo.createBasicTodo(member, workspace, "child1-todo-test-content", parentTodo, 10);
+        Todo childTodo1 = BasicTodo.create(member, workspace, "child1-todo-test-content", parentTodo, 10);
         todoRepository.save(childTodo1);
 
-        Todo childTodo2 = BasicTodo.createBasicTodo(member, workspace, "child2-todo-test-content", parentTodo, 20);
+        Todo childTodo2 = BasicTodo.create(member, workspace, "child2-todo-test-content", parentTodo, 20);
         todoRepository.save(childTodo2);
 
-        Todo childTodo3 = BasicTodo.createBasicTodo(member, workspace, "child3-todo-test-content", parentTodo, 30);
+        Todo childTodo3 = BasicTodo.create(member, workspace, "child3-todo-test-content", parentTodo, 30);
         todoRepository.save(childTodo3);
 
         em.flush();
         em.clear();
 
         // when
-        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(parentTodo.getId());
+        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(parentTodo.getId()).get();
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.getTodoWorkspaceGroup().getTodoWorkspaces().size()).isEqualTo(2);
-        assertThat(result.getContent()).isEqualTo(parentTodoContent);
-        assertThat(result.getChilds().size()).isEqualTo(3);
+        assertAll(
+                () -> assertThat(result).isNotNull(),
+                () -> assertThat(result.getTodoWorkspaceGroup().getTodoWorkspaces().size()).isEqualTo(2),
+                () -> assertThat(result.getContent()).isEqualTo(parentTodoContent),
+                () -> assertThat(result.getChilds().size()).isEqualTo(3)
+        );
     }
 
     @Test
-    public void findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds_NotExistedTodoId_IsNull() {
+    public void findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds_NotExistedTodoId_False() {
         // when
-        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(33L);
+        long fakeTodoId = 33L;
+        Optional<Todo> result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(fakeTodoId);
 
         // then
-        assertThat(result).isNull();
-    }
-
-
-    @Test(expected = RuntimeException.class)
-    public void findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds_MultipleQueryResults_ThrowPersistenceException() {
-        // given
-        memberRepository.save(member);
-
-        Workspace workspace = Workspace.create("test-workspace-name", Participant.create(member));
-        workspaceRepository.save(workspace);
-
-        final String parentTodoContent = "parent-todo-test-content";
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, parentTodoContent, null, 10);
-        todoRepository.save(parentTodo);
-
-        Todo childTodo1 = BasicTodo.createBasicTodo(member, workspace, "child1-todo-test-content", parentTodo, 10);
-        todoRepository.save(childTodo1);
-
-        Todo childTodo2 = BasicTodo.createBasicTodo(member, workspace, "child2-todo-test-content", parentTodo, 10);
-        todoRepository.save(childTodo2);
-
-        em.flush();
-        em.clear();
-
-        // when
-        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(null);
-
-        // then
-        fail("해당 메소드의 결과는 단건이 아니기에 예외가 발생해야 합니다.");
+        assertThat(result.isPresent()).isFalse();
     }
 
     @Test
@@ -219,16 +198,19 @@ public class TodoRepositoryTest {
         // given
         memberRepository.save(member);
 
-        Workspace workspace = Workspace.create("test-workspace", Participant.create(member));
+        Workspace workspace = Workspace.create("test-workspace", member);
         workspaceRepository.save(workspace);
 
-        Todo parentTodo = BasicTodo.createBasicTodo(member, workspace, "parent-todo-test-content", null, 10);
+        Todo parentTodo = BasicTodo.create(member, workspace, "parent-todo-test-content", null, 10);
         todoRepository.save(parentTodo);
 
         for (int i=0; i<10; i++) {
-            Todo childTodo = BasicTodo.createBasicTodo(member, workspace, "child-todo-test-content" + i, parentTodo, 20);
+            Todo childTodo = BasicTodo.create(member, workspace, "child-todo-test-content" + i, parentTodo, 20);
             todoRepository.save(childTodo);
         }
+
+        em.flush();
+        em.clear();
 
         // when
         int page = 2;
@@ -237,7 +219,10 @@ public class TodoRepositoryTest {
         Page<BasicTodoResponseDto> result = todoRepository.findAllBasicTodos(pageable, workspace.getId(), TodoStatus.UNCOMPLETED);
 
         // then
-        assertThat(result.getTotalElements()).isEqualTo(11); // 부모 Todo 1 + 자식 Todo 10
-        assertThat(result.getSize()).isEqualTo(size);
+        assertAll(
+                () -> assertThat(result.getTotalElements()).isEqualTo(11), // 부모 Todo 1 + 자식 Todo 10
+                () -> assertThat(result.getSize()).isEqualTo(size)
+        );
+
     }
 }

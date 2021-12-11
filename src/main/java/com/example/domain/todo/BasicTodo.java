@@ -24,11 +24,12 @@ public class BasicTodo extends Todo {
     @Builder
     public BasicTodo(Member member, Workspace workspace, String content, Todo parent, TodoStatus status, int expectedTime) {
         super(member, workspace, content, parent, status);
+
         this.expectedTime = expectedTime;
     }
 
     //== 생성 메서드 ==//
-    public static BasicTodo createBasicTodo(Member member, Workspace workspace, String content, Todo parent, int expectedTime) {
+    public static BasicTodo create(Member member, Workspace workspace, String content, Todo parent, int expectedTime) {
         return BasicTodo.builder()
                 .member(member)
                 .workspace(workspace)

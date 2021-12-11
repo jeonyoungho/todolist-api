@@ -13,7 +13,6 @@ class TodolistApiApplicationTests {
 
 	@Test
 	void contextLoads() {
-		String text = "";
 		assertThat(StringUtils.hasText(null)).isFalse();
 		assertThat(StringUtils.hasText("")).isFalse();
 		assertThat(StringUtils.hasText(" ")).isFalse();

@@ -6,7 +6,6 @@ import com.example.domain.member.Member;
 import com.example.domain.member.MemberRepository;
 import com.example.domain.todo.BasicTodo;
 import com.example.domain.todo.TodoRepository;
-import com.example.domain.workspace.Participant;
 import com.example.domain.workspace.Workspace;
 import com.example.domain.workspace.WorkspaceRepository;
 import org.junit.Test;
@@ -45,7 +44,7 @@ public class TodoServiceIntegrationTest {
     TodoRepository<com.example.domain.todo.Todo> todoRepository;
 
     @Test
-    public void saveBasicTodo_ValidInput_Success() throws Exception {
+    public void saveBasicTodo_ValidInput_Success() {
         // given
         Member member = Member.create("test-id", "test-pw", "test-name", "test-city", "test-street", "test-zipcode", Authority.ROLE_USER);
         memberRepository.save(member);
@@ -54,12 +53,14 @@ public class TodoServiceIntegrationTest {
         UserDetails principal = new User(member.getAccountId(), "", authorities);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(principal, "", authorities));
 
-        Participant participant = Participant.create(member);
-        Workspace workspace = Workspace.create("test-workspace", participant);
+        Workspace workspace = Workspace.create("test-workspace", member);
         workspaceRepository.save(workspace);
 
         final String content = "todo-test-content";
         BasicTodoSaveRequestDto request = BasicTodoSaveRequestDto.create(member.getId(), workspace.getId(), content, null, 10);
+
+        em.flush();
+        em.clear();
 
         // when
         Long result = todoService.saveBasicTodo(request);
@@ -80,21 +81,31 @@ public class TodoServiceIntegrationTest {
 //        UserDetails principal = new User(member.getAccountId(), "", authorities);
 //        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(principal, "", authorities));
 //
-//        Participant participant = Participant.create(member);
-//        Workspace workspace = Workspace.create("test-workspace", participant);
+//        Workspace workspace = Workspace.create("test-workspace", member);
 //        workspaceRepository.save(workspace);
 //
 //        final String content = "todo-test-content";
-//        BasicTodo todo = BasicTodo.createBasicTodo(member, workspace, content, null, 100);
+//        BasicTodo todo = BasicTodo.create(member, workspace, content, null, 100);
 //        todoRepository.save(todo);
 //
 //        em.flush();
 //        em.clear();
 //
 //        // when
-//        Long result = workspaceRepository.countByIdAndCurrentAccountId(workspace.getId(), member.getAccountId());
+////        Todo result = todoRepository.findByIdFetchJoinMemberAndTodoWorkspaceGroupAndChilds(999L);
+////        System.out.println(result.getContent());
+////        Long result = workspaceRepository.existsByIdAndCurrentAccountId(workspace.getId(), member.getAccountId());
+////
+////        System.out.println("result = " + result);
 //
-//        System.out.println("result = " + result);
+//        Optional<Workspace> optional = workspaceRepository.findById(workspace.getId());
+//
+//        if (optional.isPresent()) {
+//            Workspace result = optional.get();
+//            if (result.isExistByAccountId(member.getAccountId())) {
+//                System.out.println("exsited!!");
+//            }
+//        }
 //
 //        // then
 //    }

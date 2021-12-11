@@ -17,18 +17,18 @@ public class WorkspaceSaveRequestDto {
 
     @Schema(description = "작업 공간 이름", required = true)
     @NotBlank
-    private String name;
+    private String workspaceName;
 
     @Builder
-    public WorkspaceSaveRequestDto(Long memberId, String name) {
+    public WorkspaceSaveRequestDto(Long memberId, String workspaceName) {
         this.memberId = memberId;
-        this.name = name;
+        this.workspaceName = workspaceName;
     }
 
-    public static WorkspaceSaveRequestDto create(Long memberId, String name) {
+    public static WorkspaceSaveRequestDto create(Long memberId, String workspaceName) {
         return WorkspaceSaveRequestDto.builder()
                 .memberId(memberId)
-                .name(name)
+                .workspaceName(workspaceName)
                 .build();
     }
 
